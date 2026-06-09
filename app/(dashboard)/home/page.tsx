@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, Star, Activity, CheckCircle2, Sparkles, Heart, BookOpen, Clock } from 'lucide-react'
-import { SmartWatchBar } from '@/components/dashboard/SmartWatchBar'
 import { CircleOfLife } from '@/components/dashboard/CircleOfLife'
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget'
 import { MicroActionCard } from '@/components/dashboard/MicroActionCard'
@@ -157,8 +156,6 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* Smartwatch metrics bar */}
-      <SmartWatchBar />
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
