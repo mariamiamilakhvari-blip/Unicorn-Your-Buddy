@@ -43,6 +43,12 @@ const QUESTIONS: Question[] = [
     { label: 'Unemployed & Job seeking' },
     { label: 'Other' },
   ]},
+  { id: 'maritalStatus', question: 'What is your relationship status?', type: 'single', options: [
+    { label: 'Single' },
+    { label: 'In a relationship' },
+    { label: 'Married' },
+    { label: 'Divorced / Separated' },
+  ]},
   { id: 'carThoughts', question: "When you're in the car alone, what do you think about most?", type: 'single', options: [
     { label: "Work: I can't seem to leave it behind" },
     { label: 'People: someone I should call, something I should say' },
