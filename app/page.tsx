@@ -180,13 +180,13 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-8 md:px-12">
           <p className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-16">{t('aboutLabel')}</p>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-gray-700">
-              <h3 className="text-2xl font-bold text-black dark:text-white mb-4">{t('aboutCard2Title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">{t('aboutCard2Body')}</p>
+            <div className="bg-white dark:bg-gray-900 rounded-3xl p-16 shadow-sm border border-gray-100 dark:border-gray-700 min-h-[320px] flex flex-col justify-center">
+              <h3 className="text-3xl font-bold text-black dark:text-white mb-6">{t('aboutCard2Title')}</h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">{t('aboutCard2Body')}</p>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-12 shadow-sm border border-gray-100 dark:border-gray-700">
-              <h3 className="text-2xl font-bold text-black dark:text-white mb-4">{t('aboutCard3Title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">{t('aboutCard3Body')}</p>
+            <div className="bg-white dark:bg-gray-900 rounded-3xl p-16 shadow-sm border border-gray-100 dark:border-gray-700 min-h-[320px] flex flex-col justify-center">
+              <h3 className="text-3xl font-bold text-black dark:text-white mb-6">{t('aboutCard3Title')}</h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">{t('aboutCard3Body')}</p>
             </div>
           </div>
         </div>
