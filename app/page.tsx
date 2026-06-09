@@ -176,17 +176,17 @@ export default function LandingPage() {
       </section>
 
       {/* ABOUT US */}
-      <section id="about" className="py-32 bg-gradient-to-b from-[#dff0fb] via-[#e8f5fd] to-white dark:bg-gray-800">
+      <section id="about" className="py-32 bg-[#e8f0f8] dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-8 md:px-12">
           <p className="text-xs font-mono tracking-widest text-gray-400 dark:text-gray-500 uppercase mb-16">{t('aboutLabel')}</p>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-gray-900 rounded-3xl p-12 border border-gray-100 dark:border-gray-700 shadow-sm">
-              <h3 className="text-2xl font-bold text-black dark:text-white mb-5">{t('aboutCard2Title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">{t('aboutCard2Body')}</p>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-md border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">{t('aboutCard2Title')}</h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">{t('aboutCard2Body')}</p>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-3xl p-12 border border-gray-100 dark:border-gray-700 shadow-sm">
-              <h3 className="text-2xl font-bold text-black dark:text-white mb-5">{t('aboutCard3Title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">{t('aboutCard3Body')}</p>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-md border border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-3">{t('aboutCard3Title')}</h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">{t('aboutCard3Body')}</p>
             </div>
           </div>
         </div>
