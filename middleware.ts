@@ -9,15 +9,22 @@ export default auth((req) => {
   const { pathname } = req.nextUrl
 
   const isDashboard = ['/home', '/challenges', '/hobbies', '/profile', '/subscription'].some(p => pathname.startsWith(p))
-  const isOnboarding = ['/questions', '/permissions', '/smartwatch'].some(p => pathname.startsWith(p))
+  const isOnboarding = ['/questions', '/smartwatch'].some(p => pathname.startsWith(p))
   const isAuthPage = ['/login', '/signup', '/forgot-password', '/reset-password'].some(p => pathname.startsWith(p))
+  const isAdmin = pathname.startsWith('/admin')
+
+  if (isAdmin) {
+    if (!session) return NextResponse.redirect(new URL('/login', req.url))
+    if (session.user.role !== 'admin') return NextResponse.redirect(new URL('/home', req.url))
+    return NextResponse.next()
+  }
 
   if (!session && (isDashboard || isOnboarding)) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
   if (session && !session.user.onboardingCompleted && isDashboard) {
-    return NextResponse.redirect(new URL('/permissions', req.url))
+    return NextResponse.redirect(new URL('/smartwatch', req.url))
   }
 
   if (session && session.user.onboardingCompleted && isAuthPage) {
