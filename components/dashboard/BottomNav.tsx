@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Star, Zap, CreditCard } from 'lucide-react'
+import { Home, CreditCard } from 'lucide-react'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export function BottomNav() {
@@ -10,8 +10,6 @@ export function BottomNav() {
 
   const TABS = [
     { href: '/home', icon: Home, label: t('bottomNavHome') },
-    { href: '/hobbies', icon: Star, label: t('bottomNavHobbies') },
-    { href: '/challenges', icon: Zap, label: t('bottomNavChallenges') },
     { href: '/subscription', icon: CreditCard, label: t('bottomNavPlan') },
   ]
 

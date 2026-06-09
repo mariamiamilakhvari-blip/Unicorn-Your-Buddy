@@ -17,8 +17,6 @@ export function TopNav() {
 
   const NAV_LINKS = [
     { href: '/home', label: t('topNavHome') },
-    { href: '/hobbies', label: t('topNavHobbies') },
-    { href: '/challenges', label: t('topNavChallenges') },
   ]
 
   useEffect(() => {
