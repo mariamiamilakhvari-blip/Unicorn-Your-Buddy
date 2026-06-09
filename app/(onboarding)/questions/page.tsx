@@ -127,13 +127,13 @@ export default function QuestionsPage() {
                 onClick={() => toggleOption(q.id, opt.label, q.type as 'single' | 'multi')}
                 className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all ${
                   isSelected
-                    ? 'border-ochre-400 bg-ochre-50 ring-2 ring-ochre-400/20'
-                    : 'border-border bg-white hover:border-ochre-200 hover:bg-ochre-50/40'
+                    ? 'border-sky-400 bg-sky-50 ring-2 ring-sky-400/20'
+                    : 'border-sky-200 bg-white hover:border-sky-400 hover:bg-sky-50/40'
                 }`}
               >
                 <span className={`text-sm font-medium ${isSelected ? 'text-black font-semibold' : 'text-black'}`}>{opt.label}</span>
                 {isSelected && q.type === 'multi' && (
-                  <div className="ml-auto w-5 h-5 rounded-full bg-ochre-400 flex items-center justify-center">
+                  <div className="ml-auto w-5 h-5 rounded-full bg-sky-400 flex items-center justify-center">
                     <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                   </div>
                 )}
