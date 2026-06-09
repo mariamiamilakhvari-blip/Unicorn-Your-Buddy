@@ -10,14 +10,39 @@ type Question = {
   id: string
   question: string
   subtitle?: string
-  type: 'single' | 'multi' | 'text'
+  type: 'single' | 'multi' | 'text' | 'select'
   options?: { label: string; emoji?: string }[]
 }
 
 const QUESTIONS: Question[] = [
   { id: 'genderIdentity', question: 'How do you identify?', subtitle: 'This helps us personalise your well-being experience', type: 'single', options: [{ label: 'Female' }, { label: 'Male' }] },
   { id: 'ageCohort', question: 'What is your age group?', subtitle: 'We calibrate recommendations by life stage', type: 'single', options: [{ label: 'Under 18' }, { label: '18–24' }, { label: '25–34' }, { label: '35–44' }, { label: '45–54' }, { label: '55+' }] },
-  { id: 'occupation', question: 'What is your occupation?', subtitle: 'Helps us tailor your experience', type: 'text' },
+  { id: 'occupation', question: 'What is your occupation?', subtitle: 'Select an option from the dropdown list below', type: 'select', options: [
+    { label: 'Student' },
+    { label: 'Healthcare & Medical' },
+    { label: 'Technology & Engineering' },
+    { label: 'Business & Finance' },
+    { label: 'Education & Teaching' },
+    { label: 'Creative & Arts & Design' },
+    { label: 'Legal & Law' },
+    { label: 'Marketing & Communications' },
+    { label: 'Sales & Retail' },
+    { label: 'Management & Executive' },
+    { label: 'Entrepreneur & Self-employed' },
+    { label: 'Government & Public sector' },
+    { label: 'Non-profit & Social work' },
+    { label: 'Hospitality & Tourism' },
+    { label: 'Construction & Trades' },
+    { label: 'Manufacturing & Production' },
+    { label: 'Agriculture & Farming' },
+    { label: 'Military & Defense' },
+    { label: 'Sports & Fitness' },
+    { label: 'Science & Research' },
+    { label: 'Homemaker & Caregiver' },
+    { label: 'Retired' },
+    { label: 'Unemployed & Job seeking' },
+    { label: 'Other' },
+  ]},
   { id: 'energyEndOfDay', question: 'What does your energy feel like by end of day?', type: 'single', options: [
     { label: "I'm usually drained and need to decompress" },
     { label: "I'm restless and need to wind down actively" },
@@ -78,6 +103,7 @@ export default function QuestionsPage() {
 
   function canProceed() {
     if (q.type === 'text') return textInput.trim().length > 0
+    if (q.type === 'select') return !!answers[q.id]
     if (q.type === 'single') return !!answers[q.id]
     return ((answers[q.id] as string[]) ?? []).length > 0
   }
@@ -132,7 +158,20 @@ export default function QuestionsPage() {
 
       {q.type === 'text' ? (
         <div className="mb-8">
-          <Input placeholder="e.g. Georgian, American, French…" value={textInput} onChange={e => setTextInput(e.target.value)} className="h-12 text-base" autoFocus />
+          <Input placeholder="Type your answer…" value={textInput} onChange={e => setTextInput(e.target.value)} className="h-12 text-base" autoFocus />
+        </div>
+      ) : q.type === 'select' ? (
+        <div className="mb-8">
+          <select
+            value={currentValue as string}
+            onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))}
+            className="w-full h-12 px-4 rounded-xl border border-sky-200 bg-white text-sm font-medium text-gray-900 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-400/20 transition-all appearance-none cursor-pointer"
+          >
+            <option value="" disabled>Select an occupation…</option>
+            {q.options?.map(opt => (
+              <option key={opt.label} value={opt.label}>{opt.label}</option>
+            ))}
+          </select>
         </div>
       ) : (
         <div className={`grid gap-2.5 mb-8 ${q.options && q.options.length > 4 ? 'grid-cols-2' : 'grid-cols-1'}`}>
