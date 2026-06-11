@@ -147,7 +147,7 @@ export default function LandingPage() {
               <div className="absolute top-0 right-0 w-56 h-56 bg-velvet-600 rounded-full -translate-y-1/3 translate-x-1/4" />
               <div className="text-sm font-bold text-white mb-3">{t('pricingPremium')}</div>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-5xl font-black">{plan === 'yearly' ? '$149' : '$14.99'}</span>
+                <span className="text-5xl font-black">{plan === 'yearly' ? '$149' : '$19.99'}</span>
                 <span className="text-white/70 text-sm">/ {plan === 'yearly' ? t('pricingPerYear') : t('pricingPerMonth')}</span>
               </div>
               <div className="text-sky-300 text-sm mb-8">After your 21-day free trial · {t('pricingCancelAnytime')}</div>
