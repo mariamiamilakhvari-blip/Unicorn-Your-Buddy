@@ -21,6 +21,8 @@ async function callModel(
   promptOrMessages: string | { role: string; content: string }[],
 ): Promise<string> {
   const { model, key } = MODELS[modelKey]
+  const apiKey = key()
+  if (!apiKey) throw new Error(`No API key for ${modelKey}`)
   const messages = typeof promptOrMessages === 'string'
     ? [{ role: 'user', content: promptOrMessages }]
     : promptOrMessages
@@ -28,13 +30,19 @@ async function callModel(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${key()}`,
+      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL ?? 'https://unicorn-mental-health.vercel.app',
+      'X-Title': 'Unicorn',
     },
-    body: JSON.stringify({ model, messages }),
+    body: JSON.stringify({ model, messages, max_tokens: 512 }),
   })
-  if (!res.ok) throw new Error(`OpenRouter ${res.status}`)
+  if (!res.ok) {
+    const err = await res.text().catch(() => '')
+    throw new Error(`OpenRouter ${res.status}: ${err.slice(0, 120)}`)
+  }
   const data = await res.json()
-  const content = data.choices?.[0]?.message?.content
+  const msg = data.choices?.[0]?.message
+  const content = msg?.content ?? msg?.reasoning ?? null
   if (!content) throw new Error('Empty response')
   return content.trim()
 }
