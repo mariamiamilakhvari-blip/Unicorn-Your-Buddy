@@ -2,13 +2,15 @@ const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 export type ChatMessage = { role: 'user' | 'assistant'; content: string }
 
+const MAIN_KEY = () => process.env.OPENROUTER_API_KEY!
+
 const MODELS = {
-  ritual:        { model: 'meta-llama/llama-3.3-70b-instruct:free',   key: () => process.env.OPENROUTER_API_KEY! },
-  hobby:         { model: 'google/gemma-4-26b-a4b-it:free',            key: () => process.env.OPENROUTER_HOBBY_KEY! },
-  social:        { model: 'nvidia/nemotron-3-super-120b-a12b:free',    key: () => process.env.OPENROUTER_SOCIAL_KEY! },
-  fallback:      { model: 'qwen/qwen3-next-80b-a3b-instruct:free',     key: () => process.env.OPENROUTER_FALLBACK_KEY! },
-  buddy:         { model: 'google/gemma-4-31b-it:free',                key: () => process.env.OPENROUTER_BUDDY_KEY! },
-  buddyFallback: { model: 'openai/gpt-oss-120b:free',                  key: () => process.env.OPENROUTER_BUDDY_FALLBACK_KEY! },
+  ritual:        { model: 'meta-llama/llama-3.3-70b-instruct:free',   key: MAIN_KEY },
+  hobby:         { model: 'meta-llama/llama-3.3-70b-instruct:free',   key: () => process.env.OPENROUTER_HOBBY_KEY || process.env.OPENROUTER_API_KEY! },
+  social:        { model: 'meta-llama/llama-3.3-70b-instruct:free',   key: () => process.env.OPENROUTER_SOCIAL_KEY || process.env.OPENROUTER_API_KEY! },
+  fallback:      { model: 'meta-llama/llama-3.1-8b-instruct:free',    key: () => process.env.OPENROUTER_FALLBACK_KEY || process.env.OPENROUTER_API_KEY! },
+  buddy:         { model: 'meta-llama/llama-3.3-70b-instruct:free',   key: () => process.env.OPENROUTER_BUDDY_KEY || process.env.OPENROUTER_API_KEY! },
+  buddyFallback: { model: 'mistralai/mistral-7b-instruct:free',       key: () => process.env.OPENROUTER_BUDDY_FALLBACK_KEY || process.env.OPENROUTER_API_KEY! },
 } as const
 
 type ModelKey = keyof typeof MODELS
@@ -364,7 +366,7 @@ The 5 questions were:
 
 ---
 
-SCOPE: Romantic relationships only. If asked about anything else — career, health, finances — politely explain you are here only for matters of the heart and redirect gently back.
+SCOPE: Romantic relationships only. If the user's message is clearly about something else — work, career, health, money, friends (non-romantic), family (non-romantic) — respond with ONE short sentence: acknowledge their feeling warmly, then explain you're only here for romantic relationship matters, and invite them to share anything on that topic. Do not engage with the off-topic content at all.
 
 TRUST RULE: Only say things you are genuinely confident about based on what the user has shared and well-established understanding of human relationships. Never invent facts, never make unsupported assumptions. If unsure, say "I'm not sure — can you tell me more?" instead of guessing.
 
