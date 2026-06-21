@@ -139,8 +139,15 @@ export default function HomePage() {
           <h1 className="text-2xl font-bold text-gray-900">{userName ? `Hey, ${userName} 🦄` : 'Hey 🦄'}</h1>
         </div>
         {!isPaid && remaining !== null && (
-          <div className="text-xs text-muted-foreground bg-white border border-border rounded-full px-3 py-1.5 shadow-sm">
-            {remaining} free {remaining === 1 ? 'message' : 'messages'} left
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-xs text-muted-foreground font-medium">
+              {remaining} {remaining === 1 ? 'question' : 'questions'} left
+            </span>
+            <div className="flex gap-0.5 text-base">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span key={i}>{i < (5 - remaining) ? '❤️‍🩹' : '💔'}</span>
+              ))}
+            </div>
           </div>
         )}
       </div>

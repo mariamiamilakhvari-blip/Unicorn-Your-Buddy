@@ -8,14 +8,19 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 interface LandingPageProps {
   isLoggedIn: boolean
   isAdmin: boolean
+  isPaid?: boolean
 }
 
-export function LandingPage({ isLoggedIn, isAdmin }: LandingPageProps) {
+export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPageProps) {
   const { t } = useLanguage()
   const [menuOpen, setMenuOpen] = useState(false)
   const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly')
   const [dark, setDark] = useState(false)
   const [subscribing, setSubscribing] = useState(false)
+
+  const MONTHLY_PRICE = 12.99
+  const YEARLY_PRICE = 99.76
+  const landingSavings = Math.round(((MONTHLY_PRICE * 12 - YEARLY_PRICE) / (MONTHLY_PRICE * 12)) * 100)
 
   async function handleSubscribe() {
     setSubscribing(true)
@@ -178,7 +183,7 @@ export function LandingPage({ isLoggedIn, isAdmin }: LandingPageProps) {
               >
                 {t('pricingYearly')}
                 <span className="px-2 py-0.5 rounded-full bg-velvet-600 text-white text-xs font-bold">
-                  {t('pricingSave')}
+                  Save {landingSavings}%
                 </span>
               </button>
             </div>
@@ -189,7 +194,7 @@ export function LandingPage({ isLoggedIn, isAdmin }: LandingPageProps) {
               <div className="absolute top-0 right-0 w-56 h-56 bg-velvet-600 rounded-full -translate-y-1/3 translate-x-1/4" />
               <div className="text-sm font-bold text-white mb-3">{t('pricingPremium')}</div>
               <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-5xl font-black">{plan === 'yearly' ? '$79.99' : '$12.99'}</span>
+                <span className="text-5xl font-black">{plan === 'yearly' ? `$${YEARLY_PRICE}` : `$${MONTHLY_PRICE}`}</span>
                 <span className="text-white/70 text-sm">/ {plan === 'yearly' ? t('pricingPerYear') : t('pricingPerMonth')}</span>
               </div>
               <div className="text-sky-300 text-sm mb-8">{t('pricingCancelAnytime')}</div>
@@ -200,13 +205,19 @@ export function LandingPage({ isLoggedIn, isAdmin }: LandingPageProps) {
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={handleSubscribe}
-                disabled={subscribing}
-                className="mt-3 block w-full text-center py-3.5 rounded-full bg-velvet-500 border border-white/30 text-white font-bold hover:bg-velvet-400 transition-colors disabled:opacity-60"
-              >
-                {subscribing ? 'Loading…' : 'Buy Premium'}
-              </button>
+              {isPaid ? (
+                <div className="mt-3 w-full text-center py-3.5 rounded-full bg-white/10 border border-white/20 text-white/80 font-bold">
+                  ✓ Current plan
+                </div>
+              ) : (
+                <button
+                  onClick={handleSubscribe}
+                  disabled={subscribing}
+                  className="mt-3 block w-full text-center py-3.5 rounded-full bg-velvet-500 border border-white/30 text-white font-bold hover:bg-velvet-400 transition-colors disabled:opacity-60"
+                >
+                  {subscribing ? 'Loading…' : 'Buy Premium'}
+                </button>
+              )}
             </div>
           </div>
         </div>

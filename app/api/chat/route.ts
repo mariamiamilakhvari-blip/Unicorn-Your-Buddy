@@ -55,6 +55,7 @@ export async function GET() {
       isPaid,
       remaining: isPaid ? null : Math.max(0, FREE_LIMIT - count),
       profile: user.profile,
+      subscriptionPlan: user.subscription?.plan ?? 'none',
     })
   } catch (err) {
     console.error('[chat/GET]', err)

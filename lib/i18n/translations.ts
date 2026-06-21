@@ -252,7 +252,7 @@ export const translations = {
     profileHealthData: 'Health Data Access',
     profileAllowed: 'Allowed',
     profileSkipped: 'Skipped',
-    profileWellBeing: 'Well-being Profile',
+    profileWellBeing: 'Profile',
     profileDevices: 'Connected Devices',
     profileSmartwatch: 'Smartwatch — Phase 2: live sync',
     profileConnected: 'Connected',

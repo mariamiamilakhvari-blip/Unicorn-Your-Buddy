@@ -13,6 +13,7 @@ function SubscriptionContent() {
   const [loading, setLoading] = useState(false)
   const [remaining, setRemaining] = useState<number | null>(null)
   const [isPaid, setIsPaid] = useState(false)
+  const [userPlan, setUserPlan] = useState<string>('none')
 
   // Real free tier is 5 messages with Buddy, not a time-based trial.
   useEffect(() => {
@@ -21,6 +22,7 @@ function SubscriptionContent() {
       .then(data => {
         setRemaining(data.remaining ?? null)
         setIsPaid(data.isPaid ?? false)
+        setUserPlan(data.subscriptionPlan ?? 'none')
       })
       .catch(() => {})
   }, [])
@@ -45,10 +47,10 @@ function SubscriptionContent() {
   }, [searchParams])
 
   const MONTHLY_PRICE = 12.99
-  const YEARLY_PRICE = 75.89
+  const YEARLY_PRICE = 99.76
   const monthlyEquivalent = (YEARLY_PRICE / 12).toFixed(2)
   const savingsAmount = (MONTHLY_PRICE * 12 - YEARLY_PRICE).toFixed(2)
-  const savings = 49
+  const savings = Math.round(((MONTHLY_PRICE * 12 - YEARLY_PRICE) / (MONTHLY_PRICE * 12)) * 100)
   const yearlyNote = t('subYearlyNote').replace('{monthly}', `$${monthlyEquivalent}`).replace('{save}', `$${savingsAmount}`)
 
   const FEATURES = [
@@ -165,7 +167,7 @@ function SubscriptionContent() {
             ))}
           </div>
 
-          {isPaid ? (
+          {isPaid && userPlan === plan ? (
             <div className="w-full h-12 flex items-center justify-center rounded-xl bg-white/60 text-velvet-600 font-bold text-base">
               {t('subCurrentPlan')}
             </div>

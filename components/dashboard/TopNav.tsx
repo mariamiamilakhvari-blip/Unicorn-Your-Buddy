@@ -45,7 +45,7 @@ export function TopNav() {
         <LanguageSwitcher />
         <button
           onClick={() => setMenuOpen(o => !o)}
-          className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-ochre-300 bg-white/80 backdrop-blur-md text-black hover:bg-ochre-50 transition-colors text-sm font-semibold shadow-sm"
+          className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-[#a8d8f0] bg-white/80 backdrop-blur-md text-black hover:bg-[#e8f5fd] transition-colors text-sm font-semibold shadow-sm"
         >
           <div className="w-5 h-5 rounded-full bg-velvet-500 flex items-center justify-center">
             <User className="h-3 w-3 text-white" />
