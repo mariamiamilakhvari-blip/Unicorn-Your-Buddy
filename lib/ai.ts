@@ -316,13 +316,21 @@ IN EVERY PREMIUM RESPONSE:
 
 Responses: fuller and more exploratory than the free phase, but always conversational. No bullet points, no lists, no headers. Speak like the most emotionally intelligent friend they have ever had.`
 
+const FREE_FALLBACKS: Record<number, string> = {
+  1: "I hear you — something's been weighing on you. Can you tell me a little more about what's been happening?",
+  2: "That sounds really hard. What's been hitting you the most about all of this?",
+  3: "I want to make sure I understand what you're carrying. What feels most painful right now?",
+  4: "You've been through a lot. Setting aside what you think should happen — what do you actually want for yourself?",
+  5: "You've shared something real with me, and I don't want to leave it here. There's more I want to help you work through — whenever you're ready, I'll be right here.",
+}
+
 export async function generateBuddyResponse(
   profile: Profile,
   history: ChatMessage[],
   messageNumber: number,
   isPaid: boolean = false,
 ): Promise<string> {
-  const FALLBACK = "I'm here with you. Take your time — whenever you're ready, tell me what's going on."
+  const FALLBACK = FREE_FALLBACKS[messageNumber] ?? "I'm here with you. What's been going on?"
   try {
     const profileLines: string[] = []
     if (profile.genderIdentity) profileLines.push(`Gender: ${profile.genderIdentity}`)
@@ -407,17 +415,24 @@ ${phaseInstruction ? `${isPaid ? '' : 'CURRENT RESPONSE PHASE:\n'}${phaseInstruc
       ...history,
     ]
 
-    // Try primary buddy model, then buddy fallback, then general fallback
     try {
       return await callModel('buddy', messages)
-    } catch {
+    } catch (e1) {
+      console.error('[buddy] model failed:', e1)
       try {
         return await callModel('buddyFallback', messages)
-      } catch {
-        return await callModel('fallback', messages)
+      } catch (e2) {
+        console.error('[buddyFallback] model failed:', e2)
+        try {
+          return await callModel('fallback', messages)
+        } catch (e3) {
+          console.error('[fallback] model failed:', e3)
+          return FALLBACK
+        }
       }
     }
-  } catch {
+  } catch (e) {
+    console.error('[generateBuddyResponse] outer error:', e)
     return FALLBACK
   }
 }
