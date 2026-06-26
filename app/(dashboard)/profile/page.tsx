@@ -24,7 +24,7 @@ const FREE_LIMIT = 5
 export default function ProfilePage() {
   const router = useRouter()
   const { t } = useLanguage()
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const [profile, setProfile] = useState<Record<string, string | string[]>>({})
   const [avatar, setAvatar] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -42,6 +42,10 @@ export default function ProfilePage() {
   const [cancelling, setCancelling] = useState(false)
   const [cancelConfirm, setCancelConfirm] = useState(false)
   const [cancelError, setCancelError] = useState('')
+  const [deactivateConfirm, setDeactivateConfirm] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [dangerBusy, setDangerBusy] = useState(false)
+  const [dangerError, setDangerError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -58,10 +62,10 @@ export default function ProfilePage() {
       .catch(() => {})
       .finally(() => setLoading(false))
 
-    setAvatar(localStorage.getItem('unicorn_avatar'))
+    setAvatar(localStorage.getItem('unicorn_avatar') || session?.user?.image || null)
     setDisplayName(session?.user?.name ?? '')
     setDisplayEmail(session?.user?.email ?? '')
-  }, [status, router, session?.user?.name, session?.user?.email])
+  }, [status, router, session?.user?.name, session?.user?.email, session?.user?.image])
 
   function signOut() { nextAuthSignOut({ callbackUrl: '/login' }) }
 
@@ -96,6 +100,33 @@ export default function ProfilePage() {
     finally { setCancelling(false) }
   }
 
+  async function deactivateAccount() {
+    setDangerBusy(true)
+    setDangerError('')
+    try {
+      const res = await fetch('/api/user', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active: false }),
+      })
+      if (!res.ok) { const d = await res.json(); setDangerError(d.error ?? 'Failed to deactivate'); return }
+      nextAuthSignOut({ callbackUrl: '/login' })
+    } catch { setDangerError('Failed to deactivate') }
+    finally { setDangerBusy(false) }
+  }
+
+  async function deleteAccount() {
+    setDangerBusy(true)
+    setDangerError('')
+    try {
+      const res = await fetch('/api/user', { method: 'DELETE' })
+      if (!res.ok) { const d = await res.json(); setDangerError(d.error ?? 'Failed to delete'); return }
+      localStorage.removeItem('unicorn_avatar')
+      nextAuthSignOut({ callbackUrl: '/login' })
+    } catch { setDangerError('Failed to delete') }
+    finally { setDangerBusy(false) }
+  }
+
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -105,7 +136,17 @@ export default function ProfilePage() {
       form.append('file', file)
       const res = await fetch('/api/upload', { method: 'POST', body: form })
       const data = await res.json()
-      if (data.url) { setAvatar(data.url); localStorage.setItem('unicorn_avatar', data.url) }
+      if (data.url) {
+        setAvatar(data.url)
+        localStorage.setItem('unicorn_avatar', data.url)
+        // Persist to the user record so it survives across devices/logins
+        await fetch('/api/user', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: data.url }),
+        }).catch(() => {})
+        await update().catch(() => {})
+      }
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -325,6 +366,67 @@ export default function ProfilePage() {
             <LogOut className="h-4 w-4" />
             {t('profileSignOut')}
           </Button>
+        </div>
+
+        {/* Danger zone — deactivate / delete account */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-red-200">
+          <h2 className="text-sm font-semibold text-red-600 uppercase tracking-wide mb-4">Danger Zone</h2>
+
+          {/* Deactivate */}
+          <div className="flex items-start justify-between gap-4 pb-4 border-b border-gray-100">
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Deactivate account</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Hide your account and sign out. Your data is kept — log back in to reactivate.</p>
+            </div>
+            {deactivateConfirm ? (
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={deactivateAccount}
+                  disabled={dangerBusy}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition-colors disabled:opacity-50"
+                >
+                  {dangerBusy ? '…' : 'Confirm'}
+                </button>
+                <button onClick={() => setDeactivateConfirm(false)} className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+              </div>
+            ) : (
+              <button
+                onClick={() => { setDeactivateConfirm(true); setDeleteConfirm(false); setDangerError('') }}
+                className="shrink-0 px-3 py-1.5 rounded-lg border border-amber-300 text-amber-600 text-sm font-medium hover:bg-amber-50 transition-colors"
+              >
+                Deactivate
+              </button>
+            )}
+          </div>
+
+          {/* Delete */}
+          <div className="flex items-start justify-between gap-4 pt-4">
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Delete account</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Permanently remove your account and all data. This cannot be undone.</p>
+            </div>
+            {deleteConfirm ? (
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={deleteAccount}
+                  disabled={dangerBusy}
+                  className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {dangerBusy ? '…' : 'Delete forever'}
+                </button>
+                <button onClick={() => setDeleteConfirm(false)} className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+              </div>
+            ) : (
+              <button
+                onClick={() => { setDeleteConfirm(true); setDeactivateConfirm(false); setDangerError('') }}
+                className="shrink-0 px-3 py-1.5 rounded-lg border border-red-300 text-red-600 text-sm font-medium hover:bg-red-50 transition-colors"
+              >
+                Delete
+              </button>
+            )}
+          </div>
+
+          {dangerError && <p className="text-xs text-red-500 mt-3">{dangerError}</p>}
         </div>
       </div>
     </div>

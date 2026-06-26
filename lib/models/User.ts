@@ -12,6 +12,7 @@ export interface IUser extends Document {
   resetToken?: string
   resetTokenExpiry?: Date
   onboardingCompleted: boolean
+  active: boolean
   permissions: {
     notifications: boolean
     healthData: boolean
@@ -76,6 +77,7 @@ const UserSchema = new Schema<IUser>({
   resetToken: String,
   resetTokenExpiry: Date,
   onboardingCompleted: { type: Boolean, default: false },
+  active: { type: Boolean, default: true },
   permissions: {
     notifications: { type: Boolean, default: false },
     healthData: { type: Boolean, default: false },
@@ -85,6 +87,7 @@ const UserSchema = new Schema<IUser>({
   profile: {
     genderIdentity: String,
     ageCohort: String,
+    country: String,
     occupation: String,
     maritalStatus: String,
     carThoughts: String,

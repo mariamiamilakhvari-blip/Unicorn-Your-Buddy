@@ -22,6 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!user || !user.password) return null
         const valid = await bcrypt.compare(credentials.password as string, user.password)
         if (!valid) return null
+        if (user.active === false) { user.active = true; await user.save() }
         return {
           id: user._id.toString(),
           email: user.email,
@@ -64,6 +65,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.onboardingCompleted = false
           user.role = 'user'
         } else {
+          if (existing.active === false) { existing.active = true; await existing.save() }
           user.id = existing._id.toString()
           user.onboardingCompleted = existing.onboardingCompleted
           user.role = existing.role ?? 'user'
@@ -78,10 +80,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = user.role ?? 'user'
       } else if (token.id) {
         await connectDB()
-        const dbUser = await User.findById(token.id).select('role onboardingCompleted').lean() as { role?: 'user' | 'admin'; onboardingCompleted?: boolean } | null
+        const dbUser = await User.findById(token.id).select('role onboardingCompleted image').lean() as { role?: 'user' | 'admin'; onboardingCompleted?: boolean; image?: string } | null
         if (dbUser) {
           token.role = dbUser.role ?? 'user'
           token.onboardingCompleted = dbUser.onboardingCompleted ?? false
+          if (dbUser.image) token.picture = dbUser.image
         }
       }
       return token
@@ -90,6 +93,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.id = token.id
       session.user.onboardingCompleted = token.onboardingCompleted
       session.user.role = token.role ?? 'user'
+      if (token.picture) session.user.image = token.picture
       return session
     },
   },

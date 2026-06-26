@@ -31,19 +31,21 @@ function SubscriptionContent() {
   // with the API as a fallback the moment the user lands back here.
   useEffect(() => {
     const success = searchParams.get('success')
-    const subscriptionId = searchParams.get('subscription_id')
-    if (success === 'true' && subscriptionId) {
-      fetch('/api/dodo/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscriptionId }),
+    if (success !== 'true') return
+    const subscriptionId = searchParams.get('subscription_id') ?? undefined
+    fetch('/api/dodo/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscriptionId }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'active') {
+          setIsPaid(true)
+          setUserPlan('premium')
+        }
       })
-        .then(r => r.json())
-        .then(data => {
-          if (data.status === 'active') setIsPaid(true)
-        })
-        .catch(() => {})
-    }
+      .catch(() => {})
   }, [searchParams])
 
   const MONTHLY_PRICE = 12.99

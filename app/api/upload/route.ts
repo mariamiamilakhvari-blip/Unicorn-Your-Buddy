@@ -19,22 +19,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Only image files allowed' }, { status: 400 })
   }
 
-  if (file.size > 5 * 1024 * 1024) {
-    return NextResponse.json({ error: 'File too large (max 5MB)' }, { status: 400 })
+  if (file.size > 2 * 1024 * 1024) {
+    return NextResponse.json({ error: 'File too large (max 2MB)' }, { status: 400 })
   }
 
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
 
-  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-    cloudinary.uploader.upload_stream(
-      { folder: 'unicorn-avatars', transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }] },
-      (error, result) => {
-        if (error || !result) reject(error ?? new Error('Upload failed'))
-        else resolve(result as { secure_url: string })
-      }
-    ).end(buffer)
-  })
+  // No Cloudinary configured → return an inline data URL so uploads still work.
+  if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    const dataUrl = `data:${file.type};base64,${buffer.toString('base64')}`
+    return NextResponse.json({ url: dataUrl })
+  }
 
-  return NextResponse.json({ url: result.secure_url })
+  try {
+    const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { folder: 'unicorn-avatars', transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }] },
+        (error, result) => {
+          if (error || !result) reject(error ?? new Error('Upload failed'))
+          else resolve(result as { secure_url: string })
+        }
+      ).end(buffer)
+    })
+    return NextResponse.json({ url: result.secure_url })
+  } catch (err) {
+    console.error('[upload] Cloudinary error:', err)
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+  }
 }

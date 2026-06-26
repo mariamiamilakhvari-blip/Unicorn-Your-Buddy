@@ -2,17 +2,30 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { connectDB } from '@/lib/db'
 import User from '@/lib/models/User'
+import Challenge from '@/lib/models/Challenge'
+import Hobby from '@/lib/models/Hobby'
+import Notification from '@/lib/models/Notification'
 
 export async function PATCH(req: Request) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const { name, email } = await req.json()
-    const update: Record<string, string> = {}
+    const { name, email, active, image } = await req.json()
+    const update: Record<string, string | boolean> = {}
+
+    // Deactivate / reactivate account
+    if (typeof active === 'boolean') {
+      await connectDB()
+      await User.findByIdAndUpdate(session.user.id, { active })
+      return NextResponse.json({ ok: true, active })
+    }
 
     if (name && typeof name === 'string' && name.trim()) {
       update.name = name.trim()
+    }
+    if (image && typeof image === 'string' && image.trim()) {
+      update.image = image.trim()
     }
     if (email && typeof email === 'string' && email.trim()) {
       // Check email not already taken by another user
@@ -28,6 +41,26 @@ export async function PATCH(req: Request) {
 
     await connectDB()
     await User.findByIdAndUpdate(session.user.id, update)
+    return NextResponse.json({ ok: true })
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function DELETE() {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  try {
+    await connectDB()
+    const userId = session.user.id
+    // Remove user + all related records
+    await Promise.all([
+      User.findByIdAndDelete(userId),
+      Challenge.deleteMany({ userId }),
+      Hobby.deleteMany({ userId }),
+      Notification.deleteMany({ userId }),
+    ])
     return NextResponse.json({ ok: true })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

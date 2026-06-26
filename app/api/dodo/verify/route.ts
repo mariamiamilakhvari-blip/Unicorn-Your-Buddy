@@ -17,18 +17,27 @@ export async function POST(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const { subscriptionId }: { subscriptionId?: string } = await req.json()
-    if (!subscriptionId) return NextResponse.json({ error: 'Missing subscriptionId' }, { status: 400 })
+    const { subscriptionId }: { subscriptionId?: string } = await req.json().catch(() => ({}))
+    const userId = String(session.user.id)
 
-    const sub = await dodo.subscriptions.retrieve(subscriptionId)
-    if (sub.metadata?.userId !== String(session.user.id)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    // Resolve the subscription either from the id Dodo appended to the return URL,
+    // or — when none was passed — by finding this user's active subscription.
+    let sub
+    if (subscriptionId) {
+      sub = await dodo.subscriptions.retrieve(subscriptionId)
+      if (sub.metadata?.userId !== userId) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      }
+    } else {
+      const list = await dodo.subscriptions.list({ status: 'active', page_size: 20 })
+      sub = list.items?.find(s => s.metadata?.userId === userId)
+      if (!sub) return NextResponse.json({ status: 'pending' })
     }
 
     await connectDB()
 
     if (sub.status === 'active') {
-      await User.findByIdAndUpdate(session.user.id, {
+      await User.findByIdAndUpdate(userId, {
         'subscription.plan': 'premium',
         'subscription.status': 'active',
         'subscription.dodoCustomerId': sub.customer.customer_id,

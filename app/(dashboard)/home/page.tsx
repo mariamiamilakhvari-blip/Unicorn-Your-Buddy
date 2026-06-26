@@ -1,13 +1,13 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Send, Sparkles, Lock } from 'lucide-react'
+import { Send, Sparkles, Lock, Heart, HeartCrack } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
-const OPENING = "Hey, I am your buddy Unicorn 🦄. I'm here for you. Whatever is going on in your relationship, you can share it with me. What's been happening?"
+const OPENING = "Hey, I am your buddy Unicorn. I'm here for you. Whatever is going on in your relationship, you can share it with me. What's been happening?"
 
 export default function HomePage() {
   const router = useRouter()
@@ -47,7 +47,11 @@ export default function HomePage() {
       const stored = localStorage.getItem(`unicorn_chat_${session.user.id}`)
       if (stored) {
         const parsed: Message[] = JSON.parse(stored)
-        if (Array.isArray(parsed) && parsed.length > 1) setMessages(parsed)
+        if (Array.isArray(parsed) && parsed.length > 1) {
+          // Always use the latest opening copy, not a stale persisted one
+          parsed[0] = { role: 'assistant', content: OPENING }
+          setMessages(parsed)
+        }
       }
     } catch {}
   }, [session?.user?.id])
@@ -136,17 +140,21 @@ export default function HomePage() {
             <Sparkles className="h-4 w-4 text-velvet-500" />
             <span className="text-xs font-bold uppercase tracking-wide text-velvet-500">Unicorn</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">{userName ? `Hey, ${userName} 🦄` : 'Hey 🦄'}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{userName ? `Hey, ${userName}` : 'Hey'}</h1>
         </div>
         {!isPaid && remaining !== null && (
           <div className="flex flex-col items-end gap-1">
             <span className="text-xs text-muted-foreground font-medium">
               {remaining} {remaining === 1 ? 'question' : 'questions'} left
             </span>
-            <div className="flex gap-0.5 text-base">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <span key={i}>{i < (5 - remaining) ? '❤️‍🩹' : '💔'}</span>
-              ))}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) =>
+                i < (5 - remaining) ? (
+                  <Heart key={i} className="h-4 w-4 fill-rose-400 text-rose-400" strokeWidth={1.5} />
+                ) : (
+                  <HeartCrack key={i} className="h-4 w-4 text-rose-200/70" strokeWidth={1.5} />
+                )
+              )}
             </div>
           </div>
         )}
