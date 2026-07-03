@@ -12,12 +12,12 @@ export const translations = {
 
     // Hero
     heroBadge: '21-day free trial · No credit card required',
-    heroLabel: '001/ Your Buddy',
-    heroTitle1: 'Your mess',
-    heroTitleHighlight: 'is safe',
-    heroTitle2: 'here',
-    heroSubtitle: 'Biometric tracking, actionable micro-steps and a structured path to well-being',
-    heroStartFree: 'Get advice',
+    heroLabel: '001/ Relationship support',
+    heroTitle1: 'Breakup or',
+    heroTitleHighlight: 'relationship struggle?',
+    heroTitle2: 'Unicorn is here to talk.',
+    heroSubtitle: "Talk it through with someone who won't take sides and won't judge. You don't have to process this alone.",
+    heroStartFree: 'Talk to Unicorn',
     heroSeeHow: 'See how it works',
     heroFreeNote: 'First 5 questions are free',
 

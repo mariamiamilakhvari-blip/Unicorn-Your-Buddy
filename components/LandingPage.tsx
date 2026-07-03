@@ -129,12 +129,15 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
       {/* HERO */}
       <section className="min-h-screen bg-gradient-to-b from-[#cce6f7] via-[#ddf0fb] to-[#e8f5fd] dark:bg-gray-900 flex flex-col items-center justify-center text-center px-8">
         <p className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-6">{t('heroLabel')}</p>
-        <h1 className="text-6xl md:text-8xl font-black text-black dark:text-white leading-none mb-10 max-w-3xl">
+        <h1 className="text-5xl md:text-7xl font-black text-black dark:text-white leading-tight mb-6 max-w-3xl">
           {t('heroTitle1')}{' '}
-          {t('heroTitleHighlight')}{' '}
+          <span className="text-velvet-600">{t('heroTitleHighlight')}</span>{' '}
           {t('heroTitle2')}
         </h1>
-        <Link href="/signup" className="mt-16 flex items-center gap-2 bg-velvet-600 text-white font-bold px-8 py-4 rounded-full shadow-xl hover:bg-velvet-700 transition-all text-base">
+        <p className="text-lg md:text-xl text-slate-600 dark:text-gray-300 max-w-xl leading-relaxed">
+          {t('heroSubtitle')}
+        </p>
+        <Link href="/signup" className="mt-12 flex items-center gap-2 bg-velvet-600 text-white font-bold px-8 py-4 rounded-full shadow-xl hover:bg-velvet-700 transition-all text-base">
           {t('heroStartFree')} <ArrowRight className="h-4 w-4" />
         </Link>
         <p className="mt-4 text-sm text-sky-400 dark:text-sky-500">{t('heroFreeNote')}</p>
@@ -226,15 +229,15 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
       {/* ABOUT US */}
       <section id="about" className="py-32 bg-[#ddeefa] dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-8 md:px-12">
-          <p className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-16">{t('aboutLabel')}</p>
+          <p className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-6">{t('aboutLabel')}</p>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-white dark:bg-gray-900 rounded-3xl p-10 shadow-sm border border-gray-100 dark:border-gray-700 min-h-[240px] flex flex-col justify-center">
-              <h3 className="text-2xl font-bold text-black dark:text-white mb-4">{t('aboutCard2Title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">{t('aboutCard2Body')}</p>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-2">{t('aboutCard2Title')}</h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">{t('aboutCard2Body')}</p>
             </div>
-            <div className="bg-white dark:bg-gray-900 rounded-3xl p-10 shadow-sm border border-gray-100 dark:border-gray-700 min-h-[240px] flex flex-col justify-center">
-              <h3 className="text-2xl font-bold text-black dark:text-white mb-4">{t('aboutCard3Title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-lg">{t('aboutCard3Body')}</p>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-black dark:text-white mb-2">{t('aboutCard3Title')}</h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">{t('aboutCard3Body')}</p>
             </div>
           </div>
         </div>

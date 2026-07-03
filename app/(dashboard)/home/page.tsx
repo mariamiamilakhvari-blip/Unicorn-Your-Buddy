@@ -35,26 +35,26 @@ export default function HomePage() {
         setRemaining(data.remaining ?? null)
         setIsPaid(data.isPaid ?? false)
         if (!data.isPaid && (data.remaining ?? 5) <= 0) setPaywalled(true)
+        // Load saved conversation: prefer DB (cross-device), fall back to this
+        // browser's cached copy so older local chats still show.
+        let hist: Message[] | null = null
+        if (Array.isArray(data.history) && data.history.length > 1) {
+          hist = data.history
+        } else {
+          try {
+            const stored = localStorage.getItem(`unicorn_chat_${session?.user?.id}`)
+            const parsed = stored ? JSON.parse(stored) : null
+            if (Array.isArray(parsed) && parsed.length > 1) hist = parsed
+          } catch {}
+        }
+        if (hist) {
+          hist[0] = { role: 'assistant', content: OPENING }
+          setMessages(hist)
+        }
       })
       .catch(() => {})
       .finally(() => setInitialising(false))
-  }, [status, router])
-
-  // Restore persisted chat history when session is ready
-  useEffect(() => {
-    if (!session?.user?.id) return
-    try {
-      const stored = localStorage.getItem(`unicorn_chat_${session.user.id}`)
-      if (stored) {
-        const parsed: Message[] = JSON.parse(stored)
-        if (Array.isArray(parsed) && parsed.length > 1) {
-          // Always use the latest opening copy, not a stale persisted one
-          parsed[0] = { role: 'assistant', content: OPENING }
-          setMessages(parsed)
-        }
-      }
-    } catch {}
-  }, [session?.user?.id])
+  }, [status, router, session?.user?.id])
 
   // Persist chat history on every change
   useEffect(() => {
