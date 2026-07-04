@@ -1,5 +1,15 @@
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
+// Friends don't use dashes. Strip clause dashes (em/en, spaced hyphen),
+// keep intra-word hyphens (non-judgmental, self-worth).
+function stripDashes(text: string): string {
+  return text
+    .replace(/\s*[—–]\s*/g, ', ')   // em/en dash -> comma
+    .replace(/ +- +/g, ', ')         // spaced hyphen -> comma
+    .replace(/,\s*,/g, ',')          // collapse double commas
+    .replace(/,\s*([.!?])/g, '$1')   // comma before end punctuation
+}
+
 export type ChatMessage = { role: 'user' | 'assistant'; content: string }
 
 const MAIN_KEY = () => process.env.OPENROUTER_API_KEY!
@@ -44,7 +54,7 @@ async function callModel(
   const msg = data.choices?.[0]?.message
   const content = msg?.content ?? msg?.reasoning ?? null
   if (!content) throw new Error('Empty response')
-  return content.trim()
+  return stripDashes(content.trim())
 }
 
 async function generate(
