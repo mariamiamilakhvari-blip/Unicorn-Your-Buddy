@@ -47,6 +47,8 @@ export interface IUser extends Document {
   }
   chatMessageCount: number
   chatHistory: { role: 'user' | 'assistant'; content: string }[]
+  lastActive: Date
+  lastInactivityPingAt?: Date
   wellbeingPlan?: {
     hobby: {
       name: string
@@ -124,6 +126,8 @@ const UserSchema = new Schema<IUser>({
   },
   chatMessageCount: { type: Number, default: 0 },
   chatHistory: { type: [{ role: String, content: String, _id: false }], default: [] },
+  lastActive: { type: Date, default: Date.now },
+  lastInactivityPingAt: Date,
   wellbeingPlan: {
     hobby: {
       name: String,
