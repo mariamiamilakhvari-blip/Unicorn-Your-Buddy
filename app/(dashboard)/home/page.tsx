@@ -9,6 +9,26 @@ type Message = { role: 'user' | 'assistant'; content: string }
 
 const OPENING = "Hey, I am your buddy Unicorn. I'm here for you. Whatever is going on in your relationship, you can share it with me. What's been happening?"
 
+// Render text with any URLs turned into clickable links (e.g. the message-5 calming video).
+function renderWithLinks(text: string) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g)
+  return parts.map((part, i) =>
+    /^https?:\/\//.test(part) ? (
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline text-velvet-600 break-all hover:text-velvet-700"
+      >
+        {part}
+      </a>
+    ) : (
+      <span key={i}>{part}</span>
+    ),
+  )
+}
+
 export default function HomePage() {
   const router = useRouter()
   const { t } = useLanguage()
@@ -169,7 +189,7 @@ export default function HomePage() {
                 ? 'bg-velvet-500 text-white rounded-br-sm'
                 : 'bg-white border border-border text-gray-800 rounded-bl-sm shadow-sm'
             }`}>
-              {m.content}
+              {m.role === 'assistant' ? renderWithLinks(m.content) : m.content}
             </div>
           </div>
         ))}
