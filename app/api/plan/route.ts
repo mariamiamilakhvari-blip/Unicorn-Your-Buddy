@@ -8,6 +8,7 @@ import {
   generateInvitation,
   generateSocialReminder,
   generateHobbyNotification,
+  generateHobbyCheckIn,
   type HobbyStage,
 } from '@/lib/ai'
 
@@ -141,7 +142,10 @@ export async function GET() {
         const hobbyDue = now.getTime() - lastHobbyAt.getTime() >= threshold
 
         if (hobbyDue) {
-          const hobbyNotif = await generateHobbyNotification(plan.hobby.name, profile, stage)
+          // Weekly check-in asks how they feel; a lapse gets a gentle, no-question re-entry.
+          const hobbyNotif = stage === 'lapse'
+            ? await generateHobbyNotification(plan.hobby.name, profile, stage)
+            : await generateHobbyCheckIn(plan.hobby.name, profile, stage)
           await Notification.create({
             userId: user._id,
             type: 'hobby',

@@ -9,23 +9,65 @@ type Message = { role: 'user' | 'assistant'; content: string }
 
 const OPENING = "Hey, I am your buddy Unicorn. I'm here for you. Whatever is going on in your relationship, you can share it with me. What's been happening?"
 
-// Render text with any URLs turned into clickable links (e.g. the message-5 calming video).
-function renderWithLinks(text: string) {
-  const parts = text.split(/(https?:\/\/[^\s]+)/g)
-  return parts.map((part, i) =>
-    /^https?:\/\//.test(part) ? (
-      <a
-        key={i}
-        href={part}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="underline text-velvet-600 break-all hover:text-velvet-700"
-      >
-        {part}
-      </a>
-    ) : (
-      <span key={i}>{part}</span>
-    ),
+// Inline formatting: **bold** and clickable links.
+function renderInline(text: string, k: string) {
+  return text.split(/(https?:\/\/[^\s]+)/g).map((part, i) => {
+    if (/^https?:\/\//.test(part)) {
+      return (
+        <a key={`${k}-u${i}`} href={part} target="_blank" rel="noopener noreferrer" className="underline text-velvet-600 break-all hover:text-velvet-700">
+          {part}
+        </a>
+      )
+    }
+    return part.split(/(\*\*[^*]+\*\*)/g).map((bp, j) => {
+      const m = bp.match(/^\*\*([^*]+)\*\*$/)
+      return m
+        ? <strong key={`${k}-b${i}-${j}`} className="font-semibold text-gray-900">{m[1]}</strong>
+        : <span key={`${k}-t${i}-${j}`}>{bp}</span>
+    })
+  })
+}
+
+// Rich renderer for assistant messages: numbered steps, bullets, headings, bold, links.
+// Fun, scannable design instead of a raw-markdown blob.
+function renderRichText(text: string) {
+  const norm = text
+    .replace(/\s+(\d+[.)]\s)/g, '\n$1')  // inline "2. " -> own line
+    .replace(/\s+([•]\s)/g, '\n$1')
+  const lines = norm.split('\n').map(l => l.trim()).filter(Boolean)
+  return (
+    <div className="space-y-1.5">
+      {lines.map((line, i) => {
+        const num = line.match(/^(\d+)[.)]\s+(.*)$/)
+        if (num) {
+          return (
+            <div key={i} className="flex gap-2 items-start">
+              <span className="relative shrink-0 mt-0.5 h-6 w-6 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" className="absolute inset-0 h-full w-full drop-shadow-sm">
+                  <circle cx="12" cy="12" r="11" fill="#cbe94b" stroke="#a9cc2f" strokeWidth="1" />
+                  <path d="M4.5 4 Q12 12 4.5 20" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" />
+                  <path d="M19.5 4 Q12 12 19.5 20" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" />
+                </svg>
+                <span className="relative text-[10px] font-black text-emerald-900">{num[1]}</span>
+              </span>
+              <span>{renderInline(num[2], `n${i}`)}</span>
+            </div>
+          )
+        }
+        const bul = line.match(/^[-•*]\s+(.*)$/)
+        if (bul) {
+          return (
+            <div key={i} className="flex gap-2 items-start">
+              <span className="shrink-0 mt-[7px] h-1.5 w-1.5 rounded-full bg-velvet-400" />
+              <span>{renderInline(bul[1], `b${i}`)}</span>
+            </div>
+          )
+        }
+        const head = line.match(/^\*\*(.+?)\*\*:?$/)
+        if (head) return <div key={i} className="font-bold text-velvet-700 pt-1">{head[1]}</div>
+        return <p key={i}>{renderInline(line, `p${i}`)}</p>
+      })}
+    </div>
   )
 }
 
@@ -189,7 +231,7 @@ export default function HomePage() {
                 ? 'bg-velvet-500 text-white rounded-br-sm'
                 : 'bg-white border border-border text-gray-800 rounded-bl-sm shadow-sm'
             }`}>
-              {m.role === 'assistant' ? renderWithLinks(m.content) : m.content}
+              {m.role === 'assistant' ? renderRichText(m.content) : m.content}
             </div>
           </div>
         ))}
