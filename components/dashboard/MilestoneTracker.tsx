@@ -51,7 +51,7 @@ export function MilestoneTracker({ hobbyName, hobbyIcon, startDate, milestones, 
       <div className="mb-5">
         <div className="h-2 bg-muted rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-ochre-300 to-velvet-500 rounded-full transition-all duration-500"
+            className="h-full bg-velvet-500 rounded-full transition-all duration-500"
             style={{ width: `${(completedCount / milestones.length) * 100}%` }}
           />
         </div>

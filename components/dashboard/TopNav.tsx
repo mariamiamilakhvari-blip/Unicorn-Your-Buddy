@@ -33,7 +33,7 @@ export function TopNav() {
 
   return (
     <header className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
-      {/* Logo — pill style matching landing page */}
+      {/* Logo, pill style matching landing page */}
       <Link href="/" className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-gray-200 shadow-sm font-black text-black">
         <div className="w-6 h-6 rounded-md bg-velvet-500 flex items-center justify-center text-sm">🦄</div>
         Unicorn

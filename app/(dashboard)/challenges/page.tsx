@@ -6,27 +6,6 @@ import { HeatmapCalendar } from '@/components/dashboard/HeatmapCalendar'
 import { ProgressRing } from '@/components/dashboard/ProgressRing'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
-const POOL = {
-  social: [
-    { title: 'Reconnect with an old friend', description: "Reach out to someone you haven't spoken to in over 6 months. Send a message, call, or meet for coffee." },
-    { title: 'Attend a social event', description: 'Go to a meetup, community event, or gathering outside of your usual circle.' },
-    { title: 'Write gratitude messages', description: 'Write heartfelt messages to 3 people who have positively impacted your life.' },
-    { title: 'Host a gathering', description: 'Plan and host a small get-together with people who energize you.' },
-  ],
-  business: [
-    { title: 'Learn one new career skill', description: 'Research and start learning a skill that could advance your career in the next 12 months.' },
-    { title: 'Network with someone new', description: 'Connect with a new person in your field via LinkedIn or an industry event.' },
-    { title: 'Define your personal brand', description: 'Write a compelling personal brand statement that captures your unique value.' },
-    { title: 'Set a 90-day career goal', description: 'Write one ambitious goal and break it into 3 actionable first steps.' },
-  ],
-  relationships: [
-    { title: 'Phone-free quality time', description: 'Spend meaningful time with a loved one — no screens, full presence.' },
-    { title: 'Plan a thoughtful surprise', description: 'Do something unexpectedly thoughtful for someone important to you.' },
-    { title: 'Daily gratitude practice', description: 'Tell someone you appreciate them every day for 21 days.' },
-    { title: 'Write a heartfelt letter', description: 'Write a handwritten letter to someone who means the world to you.' },
-  ],
-}
-
 type Category = 'social' | 'business' | 'relationships'
 type Challenge = { id: string; title: string; description: string; category: Category; startDate: string; checkIns: string[] }
 
@@ -42,38 +21,52 @@ const BG: Record<Category, string> = {
   relationships: 'bg-rose-50 text-rose-700',
 }
 
-function load(): Challenge[] {
-  try { return JSON.parse(localStorage.getItem('unicorn_challenges') || '[]') } catch { return [] }
+type DbChallenge = { _id: string; title: string; description: string; category: Category; startDate: string; checkIns: string[] }
+function mapDb(c: DbChallenge): Challenge {
+  return { id: String(c._id), title: c.title, description: c.description, category: c.category, startDate: c.startDate, checkIns: (c.checkIns ?? []).map(String) }
 }
-function save(c: Challenge[]) { localStorage.setItem('unicorn_challenges', JSON.stringify(c)) }
 
 export default function ChallengesPage() {
   const { t } = useLanguage()
   const [challenges, setChallenges] = useState<Challenge[]>([])
+  const [busy, setBusy] = useState(false)
 
-  useEffect(() => { setChallenges(load()) }, [])
-
-  function newChallenge() {
-    const cats: Category[] = ['social', 'business', 'relationships']
-    const cat = cats[Math.floor(Math.random() * cats.length)]
-    const pool = POOL[cat]
-    const pick = pool[Math.floor(Math.random() * pool.length)]
-    const c: Challenge = { id: Date.now().toString(), ...pick, category: cat, startDate: new Date().toISOString(), checkIns: [] }
-    const updated = [c, ...challenges]
-    setChallenges(updated)
-    save(updated)
+  // DB is the single source of truth. Load from the API on mount, refetch after
+  // every mutation. No localStorage authority.
+  async function refresh() {
+    try {
+      const res = await fetch('/api/challenges')
+      const data = await res.json()
+      setChallenges(((data.challenges ?? []) as DbChallenge[]).map(mapDb))
+    } catch {}
   }
 
-  function checkIn(id: string) {
-    const today = new Date(); today.setHours(0, 0, 0, 0)
-    const updated = challenges.map(c => {
-      if (c.id !== id) return c
-      const already = c.checkIns.some(d => { const dt = new Date(d); dt.setHours(0,0,0,0); return dt.getTime() === today.getTime() })
-      if (already) return c
-      return { ...c, checkIns: [...c.checkIns, today.toISOString()] }
-    })
-    setChallenges(updated)
-    save(updated)
+  useEffect(() => { refresh() }, [])
+
+  async function newChallenge() {
+    setBusy(true)
+    try {
+      const cats: Category[] = ['social', 'business', 'relationships']
+      const category = cats[Math.floor(Math.random() * cats.length)]
+      const res = await fetch('/api/challenges', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await refresh()
+    } catch {} finally { setBusy(false) }
+  }
+
+  async function checkIn(id: string) {
+    try {
+      const res = await fetch('/api/challenges', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ challengeId: id, action: 'checkin' }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    } catch {}
+    // Refetch so the UI reflects exactly what the DB stored.
+    await refresh()
   }
 
   function isToday(c: Challenge) {
@@ -96,7 +89,8 @@ export default function ChallengesPage() {
         </div>
         <Button
           onClick={newChallenge}
-          className="bg-ochre-400 text-black hover:bg-velvet-500 hover:text-white rounded-xl h-10 px-5 font-semibold "
+          disabled={busy}
+          className="bg-ochre-400 text-black hover:bg-velvet-500 hover:text-white rounded-xl h-10 px-5 font-semibold disabled:opacity-50 "
         >
           <Zap className="h-4 w-4 mr-2" /> {t('challengesNew')}
         </Button>

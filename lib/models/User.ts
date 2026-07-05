@@ -57,6 +57,8 @@ export interface IUser extends Document {
       learningMethod: string
       description: string
       startedAt: Date
+      status?: 'active' | 'paused' | 'completed'
+      resumedAt?: Date
     }
     ritualIndex: number
     lastRitualAt?: Date
@@ -136,6 +138,8 @@ const UserSchema = new Schema<IUser>({
       learningMethod: String,
       description: String,
       startedAt: Date,
+      status: { type: String, enum: ['active', 'paused', 'completed'], default: 'active' },
+      resumedAt: Date,
     },
     ritualIndex: { type: Number, default: 0 },
     lastRitualAt: Date,

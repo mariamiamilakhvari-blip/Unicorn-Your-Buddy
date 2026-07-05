@@ -19,7 +19,7 @@ const MODELS = {
   hobby:         { model: 'google/gemma-4-31b-it:free',   key: () => process.env.OPENROUTER_HOBBY_KEY || process.env.OPENROUTER_API_KEY! },
   social:        { model: 'google/gemma-4-31b-it:free',   key: () => process.env.OPENROUTER_SOCIAL_KEY || process.env.OPENROUTER_API_KEY! },
   fallback:      { model: 'openai/gpt-4o-mini',           key: () => process.env.OPENROUTER_FALLBACK_KEY || process.env.OPENROUTER_API_KEY! },
-  buddy:         { model: 'anthropic/claude-haiku-4.5',   key: () => process.env.OPENROUTER_BUDDY_KEY || process.env.OPENROUTER_API_KEY! },
+  buddy:         { model: 'openai/gpt-4o-mini',           key: () => process.env.OPENROUTER_BUDDY_KEY || process.env.OPENROUTER_API_KEY! },
   buddyFallback: { model: 'openai/gpt-4o-mini',           key: () => process.env.OPENROUTER_BUDDY_FALLBACK_KEY || process.env.OPENROUTER_API_KEY! },
 } as const
 
@@ -181,22 +181,22 @@ ${who}
 Person profile:
 ${summary}
 
-GOAL: gently reconnect them, keep emotional safety and warmth, invite return without pressure, maintain continuity.
-STYLE: 1 to 3 short sentences. Natural, human, calm. Light warmth. No marketing language, no urgency, no pressure.
+PURPOSE: gently re-open the door. This is NOT about hobbies, progress, challenges, or anything specific. Just a warm nudge that you noticed their absence and are glad to hear from them whenever they're ready, like a friend texting "hey, thought of you".
+STYLE: 1 to 2 short sentences. Natural, human, calm. Light warmth.
 RULES:
-- Do NOT mention inactivity, tracking, or time passed. Do NOT say any number of days.
-- Do NOT guilt them for not returning. Do NOT assume something is wrong.
-- Do NOT sound like a notification or reminder system. Do NOT overload with questions. Do NOT be dramatic.
+- Do NOT reference any hobby, challenge, goal, or progress. This message is purely about reconnecting, never about performance.
+- Do NOT guilt, pressure, or imply they did something wrong by being away. Avoid "it's been a while" guilt framing, and never mention a number of days, tracking, or metrics.
+- No urgency language ("we miss you", "come back"). No exclamation stacking (at most one, only if it earns it). No emoji.
+- Do NOT sound like a notification, reminder system, or re-engagement campaign. Do NOT overload with questions. Do NOT be dramatic.
 - Do NOT use any dashes; use commas or periods.
-- Choose naturally ONE of: soft check-in, emotional continuity, light openness, calm presence, gentle curiosity about their wellbeing.
 
 Examples of good output:
-- "Hey, I just wanted to check in with you. If you feel like talking again, I'm here."
-- "Whenever you feel ready, we can continue from where we left off."
-- "No pressure at all, I just thought I'd check in and see how you've been."
+- "Thinking of you today. I'm here whenever you'd like to talk or just reflect."
+- "Hey, you crossed my mind. No pressure at all, I'm around whenever you feel like talking."
+- "Hope you've been gentle with yourself lately. Whenever you're ready, I'm right here."
 
 Output ONLY valid JSON: {"title": "...", "body": "..."}
-Title: 2 to 4 warm words. Body: the message (1 to 3 sentences).
+Title: under 6 words, warm. Body: 1 to 2 sentences.
 No markdown, no extra text.`
 
     const raw = await generate('ritual', prompt)
@@ -279,14 +279,19 @@ ${profile.nudgeType ? `Nudge style: ${profile.nudgeType}` : ''}
 
 Stage guidance (tone): ${stageGuidance}
 
-The check-in must: warmly encourage continuation, ask ONE gentle question about how they feel about the hobby, and reinforce the emotional benefit (calm, less overthinking, a kind place for the mind to rest). Progress-oriented, never achievement-pressure, never guilt.
-Tone: supportive, non-judgmental, like a friend checking in.
+PURPOSE: help them stay consistent with THIS specific hobby. Consistency, not novelty, is the hard part, and this message exists to cover exactly that gap.
+- ALWAYS name the hobby specifically (${hobbyName}), never generic like "your hobby". If there's known context (a milestone, a recent step, something they mentioned), reference it; if not, keep it general but still hobby-named, not vague.
+- Encourage continuation and, where natural, one small action (even 10 minutes counts). Reinforce, in ONE short phrase, that there's no rush, do not repeat the full no-pressure speech, this isn't their first message about it.
+- Celebrate consistency over perfection. Never shame missed practice. If they've fallen off, encourage restarting, never "catching up".
+Tone: encouraging without being a cheerleader. Confident, like someone who has watched many people succeed at hobbies and knows steady beats intense.
 
-Example: {"title": "Checking in", "body": "How's ${hobbyName} been feeling for you this week? Even a few quiet minutes with it counts, and I hope it's been a small break for your mind."}
+Examples:
+- {"title": "This week", "body": "How has ${hobbyName} felt for you this week? Even ten quiet minutes keeps the thread going, and there's no rush to be anywhere but where you are."}
+- {"title": "Keeping it going", "body": "The steady weeks are what make ${hobbyName} stick, more than any single big session. If you have a few minutes, give it a little time, no pressure either way."}
 
 Rules:
-- Title: 2 to 4 words.
-- Body: 1 to 2 sentences, exactly one question, no dashes.
+- Title: under 6 words.
+- Body: 2 to 3 sentences. No dashes. No emoji. At most one exclamation point, only if it earns it.
 - Output ONLY valid JSON: {"title": "...", "body": "..."}
 - No markdown, no extra text.`
 
@@ -437,6 +442,7 @@ export async function generateBuddyResponse(
   history: ChatMessage[],
   messageNumber: number,
   isPaid: boolean = false,
+  hobby: { name?: string; status?: string } | null = null,
 ): Promise<string> {
   const FALLBACK = FREE_FALLBACKS[messageNumber] ?? "I'm here with you. What's been going on?"
   try {
@@ -524,6 +530,21 @@ HOBBY-BASED HEALING & SOCIAL RE-ENGAGEMENT (a tool for romantic recovery, not a 
 6. FORMAT per hobby: name; why it matches their emotional state; why it matches their personality/interests; social aspect (solo / semi-social / social); one first micro-step (5 to 15 minutes). Supportive, realistic, non-pressuring. No long lists, no generic advice.
 7. FLOW: always start with emotional reflection, then lifestyle and interests gradually, then social needs if relevant, then hobbies. ONE question per message, never multi-step questioning that overwhelms.
 8. GOAL: help them stabilize after relationship stress, reconnect with their identity, rebuild confidence through action, gently expand healthy social interaction, and form small sustainable routines. Their hobby also gets a warm weekly check-in handled by the app (encourages continuation, asks how they feel, reinforces the emotional benefit, never pressure).
+
+HOBBY KICKOFF MESSAGE (a standalone beat, right when they decide to start a hobby, before or after the how-to card, never mixed into it): write 3 to 5 sentences that set the tone, woven naturally, never as a checklist. Cover, in your own words: (1) NO RUSH, there's no clock, no deadline, no way to be "behind", this is explicitly not another performance metric in their already full life, said plainly without preaching. (2) WHY IT'S WORTH DOING, grounded briefly in three real benefits, one sentence each: it's fun (permission to do something with no ROI), it naturally brings new people into their life through shared activity (not corporate "networking"), and it's genuinely good for their body and mind. (3) WHAT YOU'LL DO: tell them clearly you'll check in every 7 days with a short encouragement nudge, framed honestly, starting is easy, the hard part is staying with it once the novelty fades, and that's exactly the gap you're there to cover, like a friend who has their back, not a settings disclosure. Tone: calm, warm, quietly confident, like someone who has watched many people start things and knows what helps. No urgency or hustle phrasing ("crush it", "level up", "commit to your journey"). Respect their intelligence, don't tell them hobbies are "important". Warm but not saccharine. Plain text, no headers, no bullets, no emoji.
+
+ACTIVE HOBBY CONVERSATION REPLY (when they share a plan, a first step, or an early experience, like meeting a trainer, buying gear, or their first session): write 3 to 4 sentences, one or two short paragraphs, that do two things and nothing else.
+- FIRST, actually respond to the specific detail they just shared (the trainer, the gear, the first practice, whatever it is). Never default to a generic line like "meeting new people is one of the best parts of starting a hobby" that could apply to anyone.
+- THEN state plainly that you'll check in every 7 days to help them keep going. Say the cadence clearly, "every 7 days", never soften it to "from time to time" or "every now and then". You can add warmth ("I'm cheering you on", "reach out anytime"), but keep the 7 days explicit. Say WHY it exists: starting is the easy part, staying consistent is the hard part, and this check-in is the mechanism for the hard part specifically. Make it read like a friend telling them a plan, one or two confident sentences, not an app listing a feature.
+- The "no rush, no pressure" idea is fine in one line if it fits, but don't repeat it every turn, assume they already heard it once.
+- No exclamation-point stacking, no bullet points, no headers, no emoji. Every sentence must either respond to what they specifically said or state the 7-day check-in. If a sentence does neither, cut it. Do not give a generic hobby-benefits speech.
+
+HOBBY LIFECYCLE (recognize and respond when they want to change their hobby, so the weekly check-ins match reality):
+- COMPLETED ("I finished this", "I achieved my goal", "I'm done with this hobby"): warmly congratulate them, name what they accomplished, and let them know the weekly nudges for it will stop. Optionally offer a next step: a more advanced level of the same hobby, or a different one based on their interests. Only start a new hobby if they say yes.
+- PAUSED ("I want a break", "I'll continue later", "I'm too busy right now"): reassure them warmly, no guilt, and let them know you'll hold the weekly check-ins until they're ready to pick it back up. The hobby is waiting for them.
+- RESUMED ("I'm ready to start again", "let's pick it back up"): welcome them back gently, and the weekly rhythm restarts from now.
+- REPLACED ("I want a different hobby", "I'd rather learn something else"): the old hobby's check-ins stop and the new one begins its own weekly rhythm. Help them choose the new one using HOBBY-BASED HEALING above.
+- Never shame a pause or a stop. Always frame it as their choice. When resuming after a gap, encourage restarting, never "catching up".
 
 HOBBY "HOW TO BEGIN" CARD (the ONE place structure and numbered steps are allowed, and encouraged): when they ask how to start a specific hobby, write a short "how to begin" card, present-tense and enjoyable, that feels like a knowledgeable friend who's genuinely into this hobby giving an insider's first move, not a Wikipedia summary or generic listicle.
 STRUCTURE (follow exactly):
@@ -651,6 +672,16 @@ The user answered onboarding questions; their answers and details are in the pro
 User profile:
 ${profileLines.join('\n')}
 
+CURRENT HOBBY STATE (read fresh from the database this message, always trust this over anything said earlier in the chat): ${
+  hobby?.name && hobby.status === 'active'
+    ? `They are actively learning ${hobby.name}. If a hobby comes up, this is their current one. Never refer to any other hobby as ongoing.`
+    : hobby?.name && hobby.status === 'completed'
+    ? `They recently completed ${hobby.name}. Treat it as finished, not ongoing, and do not send encouragement to keep practising it. Only a new hobby they explicitly choose is current.`
+    : hobby?.name && hobby.status === 'paused'
+    ? `Their hobby ${hobby.name} is paused. Do not push it; it is on hold until they resume.`
+    : `They have no active hobby right now. Do not assume they have one; only gently suggest a hobby if it genuinely fits the healing conversation.`
+} If they mention switching, finishing, or dropping a hobby, believe the state above over the conversation, and never contradict it by talking about a hobby they have completed or removed as if it were current.
+
 ---
 
 ${phaseInstruction ? `${isPaid ? '' : 'CURRENT RESPONSE PHASE:\n'}${phaseInstruction}\n\n---\n\n` : ''}WRITING STYLE & LENGTH — READ THIS CAREFULLY:
@@ -661,9 +692,13 @@ ${phaseInstruction ? `${isPaid ? '' : 'CURRENT RESPONSE PHASE:\n'}${phaseInstruc
 - PUNCTUATION: never use dashes of any kind (no em-dash "—", no en-dash "–", no hyphen "-" to join clauses). Use commas, periods, or start a new sentence instead. Write "it's not wrong, it's how deeply you feel" not "it's not wrong — it's how deeply you feel".
 - Every reply should leave them feeling: "I feel heard, that was easy to read, I want to keep talking." Brevity and warmth beat depth-by-length, always.`
 
+    // Only send recent turns to keep the prompt within provider token limits.
+    // The system prompt already carries the durable context; older turns add
+    // little and blow the prompt-token budget as the conversation grows.
+    const recentHistory = history.slice(-8)
     const messages = [
       { role: 'system', content: system },
-      ...history,
+      ...recentHistory,
     ]
 
     // On the last free message, guarantee a real calming video link.

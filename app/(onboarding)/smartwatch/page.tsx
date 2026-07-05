@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button'
 
 const WEARABLES = [
   { id: 'garmin', name: 'Garmin', logo: '⌚', description: 'Connect your Garmin device to sync heart rate, stress, sleep & activity data.', available: true, badge: 'Recommended' },
-  { id: 'apple', name: 'Apple Watch', logo: '🍎', description: 'Apple Watch integration — coming soon.', available: false },
-  { id: 'fitbit', name: 'Fitbit', logo: '🔵', description: 'Fitbit integration — coming soon.', available: false },
-  { id: 'samsung', name: 'Samsung Galaxy Watch', logo: '🌀', description: 'Samsung Watch integration — coming soon.', available: false },
+  { id: 'apple', name: 'Apple Watch', logo: '🍎', description: 'Apple Watch integration, coming soon.', available: false },
+  { id: 'fitbit', name: 'Fitbit', logo: '🔵', description: 'Fitbit integration, coming soon.', available: false },
+  { id: 'samsung', name: 'Samsung Galaxy Watch', logo: '🌀', description: 'Samsung Watch integration, coming soon.', available: false },
 ]
 
 export default function SmartwatchPage() {
@@ -24,7 +24,7 @@ export default function SmartwatchPage() {
     <div className="animate-fade-in">
       <div className="mb-8">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ochre-100 text-velvet-600 text-xs font-semibold mb-4">
-          Step 1 of 2 — Wearable
+          Step 1 of 2, Wearable
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Connect your wearable</h1>
         <p className="text-muted-foreground mt-1.5">Sync biometric data to power your well-being insights</p>

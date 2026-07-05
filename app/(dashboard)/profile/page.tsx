@@ -184,7 +184,7 @@ export default function ProfilePage() {
           <h1 className="text-3xl font-bold text-gray-900">{t('profileTitle')}</h1>
         </div>
 
-        {/* Account card — avatar + name/email edit */}
+        {/* Account card, avatar + name/email edit */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-border">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">{t('profileAccount')}</h2>
           <div className="flex items-start gap-4">
@@ -219,7 +219,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-900">{displayName || session?.user?.name || '—'}</p>
+                    <p className="text-sm font-medium text-gray-900">{displayName || session?.user?.name || ', '}</p>
                     <button
                       onClick={() => { setNameInput(displayName || session?.user?.name || ''); setEditingName(true) }}
                       className="text-xs text-velvet-500 hover:text-velvet-700 font-medium"
@@ -248,7 +248,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">{displayEmail || session?.user?.email || '—'}</p>
+                    <p className="text-sm text-gray-600">{displayEmail || session?.user?.email || ', '}</p>
                     <button
                       onClick={() => { setEmailInput(displayEmail || session?.user?.email || ''); setEditingEmail(true) }}
                       className="text-xs text-velvet-500 hover:text-velvet-700 font-medium"
@@ -276,7 +276,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900">Unicorn Premium</p>
-                    <p className="text-sm text-sage-600 font-medium">Active — unlimited conversations</p>
+                    <p className="text-sm text-sage-600 font-medium">Active, unlimited conversations</p>
                   </div>
                 </div>
               </div>
@@ -348,7 +348,7 @@ export default function ProfilePage() {
                 return (
                   <div key={key} className="flex flex-col gap-0.5">
                     <span className="text-xs font-semibold text-muted-foreground">{label}</span>
-                    <span className="text-sm font-medium text-gray-800">{display || '—'}</span>
+                    <span className="text-sm font-medium text-gray-800">{display || ', '}</span>
                   </div>
                 )
               })}
@@ -368,7 +368,7 @@ export default function ProfilePage() {
           </Button>
         </div>
 
-        {/* Danger zone — deactivate / delete account */}
+        {/* Danger zone, deactivate / delete account */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-red-200">
           <h2 className="text-sm font-semibold text-red-600 uppercase tracking-wide mb-4">Danger Zone</h2>
 
@@ -376,7 +376,7 @@ export default function ProfilePage() {
           <div className="flex items-start justify-between gap-4 pb-4 border-b border-gray-100">
             <div>
               <p className="text-sm font-semibold text-gray-900">Deactivate account</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Hide your account and sign out. Your data is kept — log back in to reactivate.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Hide your account and sign out. Your data is kept, log back in to reactivate.</p>
             </div>
             {deactivateConfirm ? (
               <div className="flex gap-2 shrink-0">

@@ -14,6 +14,7 @@ export interface IHobby extends Document {
   icon: string
   learningMethod: string
   startDate: Date
+  status: 'active' | 'paused' | 'completed'
   milestones: IMilestone[]
   createdAt: Date
   updatedAt: Date
@@ -33,6 +34,7 @@ const HobbySchema = new Schema<IHobby>({
   icon: { type: String, required: true },
   learningMethod: { type: String, required: true },
   startDate: { type: Date, required: true },
+  status: { type: String, enum: ['active', 'paused', 'completed'], default: 'active' },
   milestones: [MilestoneSchema],
 }, { timestamps: true })
 

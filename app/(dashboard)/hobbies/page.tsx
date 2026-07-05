@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, Trophy } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { MilestoneTracker } from '@/components/dashboard/MilestoneTracker'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 function HobbyIcon({ name }: { name: string }) {
@@ -675,13 +675,13 @@ function buildMilestones(months: 6 | 9): Milestone[] {
     ? [1, 1, 2, 3, 4, 5, 6]
     : [1, 2, 3, 4, 6, 7, 9]
   const stages = [
-    { stage: 'knowledge',  title: 'Gather basic knowledge — find one resource and understand the landscape' },
-    { stage: 'equipment',  title: 'Acquire what you need to begin — thoughtfully and without excess' },
-    { stage: 'guides',     title: 'Follow a step-by-step guide — let structure carry you forward' },
-    { stage: 'practice',   title: 'Commit to regular practice — consistency is what compounds' },
-    { stage: 'community',  title: 'Join a community — shared practice accelerates what solitude cannot' },
-    { stage: 'technique',  title: 'Try a new technique — approach it with curiosity, not pressure' },
-    { stage: 'feedback',   title: 'Seek honest feedback — what others reflect back will guide you precisely' },
+    { stage: 'knowledge',  title: 'Gather basic knowledge, find one resource and understand the landscape' },
+    { stage: 'equipment',  title: 'Acquire what you need to begin, thoughtfully and without excess' },
+    { stage: 'guides',     title: 'Follow a step-by-step guide, let structure carry you forward' },
+    { stage: 'practice',   title: 'Commit to regular practice, consistency is what compounds' },
+    { stage: 'community',  title: 'Join a community, shared practice accelerates what solitude cannot' },
+    { stage: 'technique',  title: 'Try a new technique, approach it with curiosity, not pressure' },
+    { stage: 'feedback',   title: 'Seek honest feedback, what others reflect back will guide you precisely' },
   ]
   return stages.map((s, i) => ({ ...s, targetMonth: targets[i], completedAt: null }))
 }
@@ -691,7 +691,7 @@ const STAGE_MESSAGES: { stage: string; msgs: [string, string][] }[] = [
   {
     stage: 'knowledge',
     msgs: [
-      ['Begin with curiosity', 'Your {hobby} journey starts here. Find one article or short tutorial today — not to master anything yet, just to understand the landscape ahead of you.'],
+      ['Begin with curiosity', 'Your {hobby} journey starts here. Find one article or short tutorial today, not to master anything yet, just to understand the landscape ahead of you.'],
       ['Knowledge is your first tool', 'One well-chosen piece of information about {hobby} will carry you further than rushing to begin. Take a few minutes to explore the basics today.'],
       ['Set your first intention', 'What would you like to feel capable of in {hobby} one week from now? A quiet intention set now will shape everything that follows.'],
     ],
@@ -699,7 +699,7 @@ const STAGE_MESSAGES: { stage: string; msgs: [string, string][] }[] = [
   {
     stage: 'equipment',
     msgs: [
-      ['Gather what you need — thoughtfully', "You don't need everything at once to begin {hobby}. Identify the two or three essentials and acquire them with intention, not urgency."],
+      ['Gather what you need, thoughtfully', "You don't need everything at once to begin {hobby}. Identify the two or three essentials and acquire them with intention, not urgency."],
       ['Quality over quantity', 'The right tools make {hobby} feel deliberate and enjoyable. A modest, well-chosen setup is worth far more than an overwhelming one.'],
       ['A moment of preparation', 'Before diving in, pause. Do you have what you need to begin {hobby} well? A few minutes of preparation now saves hours of frustration later.'],
     ],
@@ -707,23 +707,23 @@ const STAGE_MESSAGES: { stage: string; msgs: [string, string][] }[] = [
   {
     stage: 'guides',
     msgs: [
-      ['Let structure carry you', 'A well-made guide for {hobby} is a gift — it holds the experience of those who came before you. Follow one this week and let it do the work.'],
-      ['One deliberate step', 'Progress in {hobby} is made one carefully chosen step at a time. Today\'s focus is not mastery — it is simply the next small thing.'],
-      ['You are exactly where you need to be', 'Find something — a tutorial, a chapter, a demonstration — that takes your {hobby} practice one step further. There is no rush.'],
+      ['Let structure carry you', 'A well-made guide for {hobby} is a gift, it holds the experience of those who came before you. Follow one this week and let it do the work.'],
+      ['One deliberate step', 'Progress in {hobby} is made one carefully chosen step at a time. Today\'s focus is not mastery, it is simply the next small thing.'],
+      ['You are exactly where you need to be', 'Find something, a tutorial, a chapter, a demonstration, that takes your {hobby} practice one step further. There is no rush.'],
     ],
   },
   {
     stage: 'practice',
     msgs: [
-      ['Show up for yourself', 'Thirty minutes of {hobby} today — not to impress anyone, not to perform. Just to be present with something that belongs entirely to you.'],
+      ['Show up for yourself', 'Thirty minutes of {hobby} today, not to impress anyone, not to perform. Just to be present with something that belongs entirely to you.'],
       ['Consistency is the real practice', 'How has your {hobby} practice felt this week? Consistent effort, even imperfect effort, is what compounds quietly over time.'],
-      ['Try one new thing today', 'Give yourself permission to explore something slightly different within {hobby}. You are not performing — you are still discovering.'],
+      ['Try one new thing today', 'Give yourself permission to explore something slightly different within {hobby}. You are not performing, you are still discovering.'],
     ],
   },
   {
     stage: 'community',
     msgs: [
-      ['Good company accelerates everything', 'Find one community — online or local — where others share your interest in {hobby}. You will grow faster in good company than in isolation.'],
+      ['Good company accelerates everything', 'Find one community, online or local, where others share your interest in {hobby}. You will grow faster in good company than in isolation.'],
       ['Share a piece of your journey', 'Offer a glimpse of where you are with {hobby}. You may find that others are further behind than you assumed, and further ahead than you realised.'],
       ['One well-asked question', 'A single thoughtful question to someone more experienced in {hobby} can save you weeks of unnecessary confusion. It is worth asking.'],
     ],
@@ -731,15 +731,15 @@ const STAGE_MESSAGES: { stage: string; msgs: [string, string][] }[] = [
   {
     stage: 'technique',
     msgs: [
-      ['A quiet invitation to try something new', 'There is a technique in {hobby} you have not explored yet. Approach it with curiosity today — not pressure, not expectation. Just openness.'],
+      ['A quiet invitation to try something new', 'There is a technique in {hobby} you have not explored yet. Approach it with curiosity today, not pressure, not expectation. Just openness.'],
       ['Deliberate experimentation', 'Comfort zones in {hobby} are useful until they are not. One intentional attempt at something different this week is enough to shift your trajectory.'],
-      ['Growth happens in quiet pivots', 'What is one thing you could do differently in {hobby} today? The most meaningful progress rarely announces itself — it simply happens, once you try.'],
+      ['Growth happens in quiet pivots', 'What is one thing you could do differently in {hobby} today? The most meaningful progress rarely announces itself, it simply happens, once you try.'],
     ],
   },
   {
     stage: 'feedback',
     msgs: [
-      ['Your work has value', 'Ask someone whose perspective you trust to offer honest thoughts on your {hobby} progress. You are ready to hear it — and it will guide you precisely.'],
+      ['Your work has value', 'Ask someone whose perspective you trust to offer honest thoughts on your {hobby} progress. You are ready to hear it, and it will guide you precisely.'],
       ['Sharing opens new doors', 'Have you shared what you have made or learned through {hobby}? Even a brief response from someone else will move you forward more than solitary practice.'],
       ['You have come further than you realise', 'Pause and look back at where you began with {hobby}. The distance between then and now is greater than it feels from the inside.'],
     ],
@@ -750,7 +750,7 @@ function getWeeklyHobbyNotif(hobby: Hobby): { title: string; body: string } {
   if (hobby.milestones.every(m => !!m.completedAt)) {
     return {
       title: 'You have completed this journey',
-      body: `Every stage of your ${hobby.name} practice is behind you. That is a genuine achievement — and when you are ready, a new chapter awaits.`,
+      body: `Every stage of your ${hobby.name} practice is behind you. That is a genuine achievement, and when you are ready, a new chapter awaits.`,
     }
   }
   const daysSinceStart = Math.floor((Date.now() - new Date(hobby.startDate).getTime()) / (24 * 60 * 60 * 1000))
@@ -763,7 +763,8 @@ function getWeeklyHobbyNotif(hobby: Hobby): { title: string; body: string } {
   return { title, body: body.replace(/\{hobby\}/g, hobby.name) }
 }
 
-type Hobby = { name: string; icon: string; learningMethod: string; startDate: string; milestones: Milestone[]; durationMonths: 6 | 9 }
+type HobbyStatus = 'active' | 'paused' | 'completed'
+type Hobby = { name: string; icon: string; learningMethod: string; startDate: string; milestones: Milestone[]; durationMonths: 6 | 9; status?: HobbyStatus }
 type Step = 'pick' | 'learn' | 'tracker'
 
 type Profile = Record<string, string | string[]>
@@ -811,6 +812,7 @@ function scoreHobby(h: { name: string; category: string }, profile: Profile): nu
 
 export default function HobbiesPage() {
   const { t } = useLanguage()
+  const router = useRouter()
   const [step, setStep] = useState<Step>('pick')
   const [hobby, setHobby] = useState<Hobby | null>(null)
   const [selected, setSelected] = useState<{ name: string; icon: string } | null>(null)
@@ -818,42 +820,141 @@ export default function HobbiesPage() {
   const [duration, setDuration] = useState<6 | 9 | null>(null)
   const [profile, setProfile] = useState<Profile>({})
 
+  // Build the page's hobby view from the DB response (single source of truth).
+  // Milestone titles come from the local builder; completion state is merged
+  // from the DB Hobby doc by stage so checkmarks persist across devices.
+  function fromDb(data: { hobby: unknown; planHobby: unknown }): Hobby | null {
+    const dbHobby = data.hobby as (Record<string, unknown> & { milestones?: { stage: string; completedAt?: string | null }[] }) | null
+    const plan = data.planHobby as (Record<string, unknown>) | null
+    const src = plan ?? dbHobby
+    if (!src) return null
+    const durationMonths = ((plan?.duration as number) ?? 6) === 9 ? 9 : 6
+    const doneByStage = new Map((dbHobby?.milestones ?? []).map(m => [m.stage, m.completedAt ?? null]))
+    return {
+      name: String(src.name),
+      icon: String((dbHobby?.icon as string) ?? ''),
+      learningMethod: String((src.learningMethod as string) ?? ''),
+      startDate: new Date(((plan?.startedAt as string) ?? (dbHobby?.startDate as string) ?? Date.now())).toISOString(),
+      durationMonths,
+      status: ((src.status as HobbyStatus) ?? 'active'),
+      milestones: buildMilestones(durationMonths).map(m => ({ ...m, completedAt: doneByStage.get(m.stage) ?? null })),
+    }
+  }
+
   useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('unicorn_hobby') || 'null')
-      if (saved) { setHobby(saved); setStep('tracker') }
-    } catch {}
     try {
       const p = JSON.parse(localStorage.getItem('unicorn_profile') || '{}')
       setProfile(p)
     } catch {}
-  }, [])
 
-  function saveHobby() {
+    // DB is authoritative. Fetch it; localStorage is only a fallback cache if
+    // the request fails (offline), never an independent source.
+    // If an active hobby already exists, managing it lives on Profile & Settings.
+    // This page is only for picking a (new) hobby.
+    fetch('/api/hobbies')
+      .then(r => r.json())
+      .then(data => {
+        const h = fromDb(data)
+        if (h && h.status === 'active') {
+          router.replace('/profile')
+        } else {
+          localStorage.removeItem('unicorn_hobby')
+          setHobby(null); setStep('pick')
+        }
+      })
+      .catch(() => {})
+  }, [router])
+
+  const [busy, setBusy] = useState(false)
+  const [feedback, setFeedback] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
+  const [confirm, setConfirm] = useState<null | 'replace' | 'delete'>(null)
+
+  // Write to the DB first (source of truth), then reflect it locally. Awaited so
+  // we never show a hobby the DB didn't accept.
+  async function saveHobby() {
     if (!selected || !method || !duration) return
-    const h: Hobby = {
-      name: selected.name,
-      icon: selected.icon,
-      learningMethod: method,
-      startDate: new Date().toISOString(),
-      milestones: buildMilestones(duration),
-      durationMonths: duration,
+    setBusy(true); setFeedback(null)
+    try {
+      const res = await fetch('/api/hobbies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: selected.name, icon: selected.icon, learningMethod: method, duration }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      // Managing the hobby lives on Profile & Settings; go there after picking.
+      router.push('/profile')
+    } catch {
+      setFeedback({ kind: 'error', text: 'Could not save your hobby. Please try again.' })
+    } finally {
+      setBusy(false)
     }
-    localStorage.setItem('unicorn_hobby', JSON.stringify(h))
-    setHobby(h)
-    setStep('tracker')
   }
 
-  function updateMilestone(stage: string, completed: boolean) {
-    return new Promise<void>(resolve => {
+  // Change lifecycle status via the API (source of truth for weekly check-ins),
+  // then reflect it locally. Surfaces errors instead of assuming success.
+  async function changeStatus(status: HobbyStatus, okText: string) {
+    setBusy(true); setFeedback(null)
+    try {
+      const res = await fetch('/api/hobbies', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setHobby(prev => {
         if (!prev) return prev
-        const updated = { ...prev, milestones: prev.milestones.map(m => m.stage === stage ? { ...m, completedAt: completed ? new Date().toISOString() : null } : m) }
+        const updated = { ...prev, status }
         localStorage.setItem('unicorn_hobby', JSON.stringify(updated))
         return updated
       })
-      resolve()
+      setFeedback({ kind: 'ok', text: okText })
+    } catch {
+      setFeedback({ kind: 'error', text: 'Something went wrong. Please try again.' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function doReplace() {
+    setConfirm(null); setBusy(true); setFeedback(null)
+    try {
+      // Archive the current hobby as completed so its check-ins stop and history stays.
+      await fetch('/api/hobbies', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      })
+      resetHobby()
+    } catch {
+      setFeedback({ kind: 'error', text: 'Could not switch hobby. Please try again.' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function doDelete() {
+    setConfirm(null); setBusy(true); setFeedback(null)
+    try {
+      const res = await fetch('/api/hobbies', { method: 'DELETE' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      resetHobby()
+    } catch {
+      setFeedback({ kind: 'error', text: 'Could not remove hobby. Please try again.' })
+      setBusy(false)
+    }
+  }
+
+  async function updateMilestone(stage: string, completed: boolean) {
+    setHobby(prev => {
+      if (!prev) return prev
+      const updated = { ...prev, milestones: prev.milestones.map(m => m.stage === stage ? { ...m, completedAt: completed ? new Date().toISOString() : null } : m) }
+      localStorage.setItem('unicorn_hobby', JSON.stringify(updated))
+      return updated
     })
+    // Persist milestone completion to the DB so it survives across devices.
+    await fetch('/api/hobbies', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ milestoneStage: stage, completed }),
+    }).catch(() => {})
   }
 
   function resetHobby() { localStorage.removeItem('unicorn_hobby'); setHobby(null); setSelected(null); setMethod(''); setDuration(null); setStep('pick') }
@@ -972,105 +1073,6 @@ export default function HobbiesPage() {
     </div>
   )
 
-  // --- TRACKER step ---
-  if (step === 'tracker' && hobby) {
-    const stageNotif = getWeeklyHobbyNotif(hobby)
-    const completedCount = hobby.milestones.filter(m => !!m.completedAt).length
-
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{t('hobbiesJourneyTitle')}</h1>
-            <p className="text-muted-foreground mt-1">{t('hobbiesJourneySubtitle')}</p>
-          </div>
-          <button onClick={resetHobby} className="text-sm font-semibold text-velvet-500 hover:underline">
-            {t('hobbiesChangeHobby')}
-          </button>
-        </div>
-
-        {/* Stage notification */}
-        <div className="bg-velvet-500 rounded-2xl p-5 text-white flex items-start gap-4">
-          <div className="bg-white/20 rounded-xl p-2 shrink-0">
-            <svg viewBox="0 0 32 32" fill="none" className="w-5 h-5">
-              <path d="M16 3L17.8 13H27L19.5 19L22 29L16 23.5L10 29L12.5 19L5 13H14.2Z" fill="white" opacity="0.9"/>
-              <circle cx="16" cy="14" r="3" fill="#fef08a"/>
-            </svg>
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide opacity-75 mb-1">This week</p>
-            <p className="font-semibold text-sm leading-snug">{stageNotif.title}</p>
-            <p className="text-xs opacity-80 mt-1 leading-relaxed">{stageNotif.body}</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* Left: hobby info */}
-          <div className="space-y-4">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-border text-center">
-              <div className="flex items-center justify-center mb-3"><HobbyIcon name={hobby.name} /></div>
-              <h2 className="text-xl font-bold text-gray-900">{hobby.name}</h2>
-              <p className="text-sm text-muted-foreground mt-1">{hobby.learningMethod}</p>
-              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-velvet-50 border border-velvet-100">
-                <span className="text-xs font-bold text-velvet-600">{hobby.durationMonths}-month journey</span>
-              </div>
-              <div className="mt-4 pt-4 border-t border-border">
-                <p className="text-xs text-muted-foreground">{t('hobbiesStarted')}</p>
-                <p className="text-sm font-semibold text-gray-700">
-                  {new Date(hobby.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                </p>
-              </div>
-            </div>
-
-            {/* Progress by month */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-border">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-ochre-400" /> {t('hobbiesProgressLabel')}
-              </h3>
-              <div className="space-y-2">
-                {Array.from({ length: hobby.durationMonths }, (_, i) => i + 1).map(month => {
-                  const total = hobby.milestones.filter(m => m.targetMonth === month).length
-                  const done = hobby.milestones.filter(m => m.targetMonth === month && m.completedAt).length
-                  if (!total) return null
-                  return (
-                    <div key={month}>
-                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                        <span>{t('hobbiesMonth')} {month}</span>
-                        <span>{done}/{total}</span>
-                      </div>
-                      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-ochre-300 to-velvet-500 rounded-full transition-all"
-                          style={{ width: `${total ? (done / total) * 100 : 0}%` }}
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            <div className="bg-velvet-500 rounded-2xl p-4 text-white">
-              <p className="font-semibold text-sm">{completedCount}/{hobby.milestones.length} milestones completed</p>
-              <p className="text-xs opacity-90 mt-0.5">{t('hobbiesCheckInReminder')}</p>
-            </div>
-          </div>
-
-          {/* Right: milestone tracker */}
-          <div className="xl:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-border">
-            <MilestoneTracker
-              hobbyName={hobby.name}
-              hobbyIcon={hobby.icon}
-              startDate={hobby.startDate}
-              milestones={hobby.milestones}
-              durationMonths={hobby.durationMonths}
-              onUpdate={updateMilestone}
-            />
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return null
 }

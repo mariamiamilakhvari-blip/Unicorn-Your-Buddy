@@ -157,7 +157,7 @@ export default function HomePage() {
       setRemaining(data.isPaid ? null : Math.max(0, 5 - data.messageCount))
       setIsPaid(data.isPaid)
     } catch {
-      setMessages(m => [...m, { role: 'assistant', content: "I'm here — just had a tiny hiccup. Try again?" }])
+      setMessages(m => [...m, { role: 'assistant', content: "I'm here, just had a tiny hiccup. Try again?" }])
     } finally {
       setLoading(false)
     }
@@ -255,7 +255,7 @@ export default function HomePage() {
                 <Lock className="h-4 w-4 text-velvet-500" />
                 <span className="text-sm font-bold text-gray-900">You've used your 5 free messages</span>
               </div>
-              <p className="text-sm text-gray-600 mb-3">Unicorn is still here — unlock unlimited conversations to keep going.</p>
+              <p className="text-sm text-gray-600 mb-3">Unicorn is still here, unlock unlimited conversations to keep going.</p>
               <button
                 onClick={unlockBuddy}
                 disabled={checkoutLoading}
@@ -280,7 +280,7 @@ export default function HomePage() {
             placeholder="Tell Unicorn about your relationship. What's going on..."
             rows={1}
             disabled={loading}
-            className="flex-1 resize-none rounded-2xl border border-border bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-velvet-400/30 focus:border-velvet-400 transition-all disabled:opacity-50 max-h-32 overflow-y-auto"
+            className="flex-1 resize-none rounded-2xl border border-border bg-white px-4 py-3 text-sm caret-[#60a5fa] focus:outline-none focus:ring-2 focus:ring-velvet-400/30 focus:border-velvet-400 transition-all disabled:opacity-50 max-h-32 overflow-y-auto [&::-webkit-scrollbar-thumb]:bg-[#60a5fa]"
             style={{ minHeight: '48px' }}
           />
           <button

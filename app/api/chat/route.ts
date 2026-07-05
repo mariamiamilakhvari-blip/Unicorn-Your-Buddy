@@ -27,7 +27,12 @@ export async function POST(req: Request) {
 
     // messageNumber is 1-based: count=0 → this is message 1
     const messageNumber = Math.min(count + 1, 5)
-    const reply = await generateBuddyResponse(user.profile as Record<string, string>, history, messageNumber, isPaid)
+    // Read the current hobby fresh every message (user was just re-fetched above),
+    // so a hobby switch/complete/delete made elsewhere is reflected on the next turn.
+    const currentHobby = user.wellbeingPlan?.hobby
+      ? { name: user.wellbeingPlan.hobby.name, status: user.wellbeingPlan.hobby.status }
+      : null
+    const reply = await generateBuddyResponse(user.profile as Record<string, string>, history, messageNumber, isPaid, currentHobby)
 
     // Persist the full conversation so it loads across devices/sessions
     const fullHistory = [...history, { role: 'assistant', content: reply }]
