@@ -45,6 +45,15 @@ export interface IUser extends Document {
     dodoCustomerId?: string
     dodoSubscriptionId?: string
   }
+  // Premium Plus (Car Dating) add-on, billed and tracked independently of the
+  // base subscription. A user can hold both at once.
+  premiumPlus: {
+    active: boolean
+    plan: 'monthly' | 'yearly' | 'none'
+    status: 'active' | 'cancelled' | 'expired'
+    currentPeriodEnd?: Date
+    dodoSubscriptionId?: string
+  }
   chatMessageCount: number
   chatHistory: { role: 'user' | 'assistant'; content: string }[]
   lastActive: Date
@@ -124,6 +133,13 @@ const UserSchema = new Schema<IUser>({
     stripeCustomerId: String,
     stripeSubscriptionId: String,
     dodoCustomerId: String,
+    dodoSubscriptionId: String,
+  },
+  premiumPlus: {
+    active: { type: Boolean, default: false },
+    plan: { type: String, enum: ['monthly', 'yearly', 'none'], default: 'none' },
+    status: { type: String, enum: ['active', 'cancelled', 'expired'], default: 'expired' },
+    currentPeriodEnd: Date,
     dodoSubscriptionId: String,
   },
   chatMessageCount: { type: Number, default: 0 },

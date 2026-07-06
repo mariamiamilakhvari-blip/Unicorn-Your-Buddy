@@ -28,7 +28,16 @@ export async function POST(req: Request) {
   if (event.type === 'subscription.active' || event.type === 'subscription.renewed') {
     const sub = event.data
     const userId = sub.metadata?.userId
-    if (userId) {
+    const isPremiumPlus = sub.metadata?.tier === 'premium_plus'
+    if (userId && isPremiumPlus) {
+      // Car Dating add-on, credited independently of the base subscription.
+      await User.findByIdAndUpdate(userId, {
+        'premiumPlus.active': true,
+        'premiumPlus.status': 'active',
+        'premiumPlus.plan': sub.metadata?.plan === 'yearly' ? 'yearly' : 'monthly',
+        'premiumPlus.dodoSubscriptionId': sub.subscription_id,
+      })
+    } else if (userId) {
       await User.findByIdAndUpdate(userId, {
         'subscription.plan': 'premium',
         'subscription.status': 'active',
@@ -41,7 +50,13 @@ export async function POST(req: Request) {
   if (event.type === 'subscription.cancelled' || event.type === 'subscription.expired') {
     const sub = event.data
     const userId = sub.metadata?.userId
-    if (userId) {
+    const isPremiumPlus = sub.metadata?.tier === 'premium_plus'
+    if (userId && isPremiumPlus) {
+      await User.findByIdAndUpdate(userId, {
+        'premiumPlus.active': false,
+        'premiumPlus.status': event.type === 'subscription.cancelled' ? 'cancelled' : 'expired',
+      })
+    } else if (userId) {
       await User.findByIdAndUpdate(userId, {
         'subscription.plan': 'none',
         'subscription.status': event.type === 'subscription.cancelled' ? 'cancelled' : 'expired',
