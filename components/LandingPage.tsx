@@ -22,11 +22,6 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
   const YEARLY_PRICE = 99.76
   const landingSavings = Math.round(((MONTHLY_PRICE * 12 - YEARLY_PRICE) / (MONTHLY_PRICE * 12)) * 100)
 
-  // Premium Plus (Car Dating) add-on, billed independently of the base plan.
-  const PLUS_MONTHLY_PRICE = 4.99
-  const PLUS_YEARLY_PRICE = 38.32
-  const [subscribingPlus, setSubscribingPlus] = useState(false)
-
   async function handleSubscribe() {
     setSubscribing(true)
     try {
@@ -36,22 +31,6 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
       if (data.url) window.location.href = data.url
     } finally {
       setSubscribing(false)
-    }
-  }
-
-  async function handleSubscribePlus() {
-    setSubscribingPlus(true)
-    try {
-      const res = await fetch('/api/car-dating/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
-      })
-      if (res.status === 401) { window.location.href = '/login'; return }
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
-    } finally {
-      setSubscribingPlus(false)
     }
   }
 
@@ -213,7 +192,7 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl">
+          <div className="max-w-lg">
             {/* Base Premium */}
             <div className="bg-velvet-700 rounded-2xl p-10 text-white relative overflow-hidden">
               <div className="absolute top-0 right-0 w-56 h-56 bg-velvet-600 rounded-full -translate-y-1/3 translate-x-1/4" />
@@ -243,32 +222,6 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
                   {subscribing ? 'Loading…' : 'Buy Premium'}
                 </button>
               )}
-            </div>
-
-            {/* Premium Plus, Car Dating add-on */}
-            <div className="bg-slate-900 rounded-2xl p-10 text-white relative overflow-hidden border border-velvet-500/40">
-              <div className="absolute top-0 right-0 w-56 h-56 bg-velvet-700/40 rounded-full -translate-y-1/3 translate-x-1/4" />
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm font-bold text-white">Premium Plus</span>
-                <span className="px-2 py-0.5 rounded-full bg-velvet-500 text-white text-[10px] font-bold">CAR DATING</span>
-              </div>
-              <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-5xl font-black">{plan === 'yearly' ? `$${PLUS_YEARLY_PRICE}` : `$${PLUS_MONTHLY_PRICE}`}</span>
-                <span className="text-white/70 text-sm">/ {plan === 'yearly' ? t('pricingPerYear') : t('pricingPerMonth')}</span>
-              </div>
-              <div className="text-sky-300 text-sm mb-8">Add-on, cancel anytime</div>
-              <ul className="space-y-3 mb-10">
-                <li className="flex items-center gap-3 text-sm text-white"><CheckCircle2 className="h-4 w-4 text-sky-300 shrink-0" />Match with car enthusiasts near you</li>
-                <li className="flex items-center gap-3 text-sm text-white"><CheckCircle2 className="h-4 w-4 text-sky-300 shrink-0" />Browse, express interest, and match</li>
-                <li className="flex items-center gap-3 text-sm text-white"><CheckCircle2 className="h-4 w-4 text-sky-300 shrink-0" />Share your contact only with matches</li>
-              </ul>
-              <button
-                onClick={handleSubscribePlus}
-                disabled={subscribingPlus}
-                className="mt-3 block w-full text-center py-3.5 rounded-full bg-velvet-500 border border-white/30 text-white font-bold hover:bg-velvet-400 transition-colors disabled:opacity-60"
-              >
-                {subscribingPlus ? 'Loading…' : 'Add Premium Plus'}
-              </button>
             </div>
           </div>
         </div>
