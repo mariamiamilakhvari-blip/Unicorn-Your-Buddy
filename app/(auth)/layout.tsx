@@ -15,7 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <div className="flex-1 flex items-center justify-center px-12">
-          <h2 className="text-6xl font-black leading-tight text-center">Start Your Well-Being Journey</h2>
+          <h2 className="text-6xl font-black leading-tight text-center">Start conversation with your Unicorn</h2>
         </div>
       </div>
 
