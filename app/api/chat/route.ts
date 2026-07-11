@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { connectDB } from '@/lib/db'
 import User from '@/lib/models/User'
-import { generateBuddyResponse, type ChatMessage } from '@/lib/ai'
+import { generateBuddyResponse, extractHobbyTag, stripHobbyTag, type ChatMessage } from '@/lib/ai'
 
 const FREE_LIMIT = 5
 const PAID_PLANS = ['monthly', 'yearly', 'premium']
@@ -32,16 +32,37 @@ export async function POST(req: Request) {
     const currentHobby = user.wellbeingPlan?.hobby
       ? { name: user.wellbeingPlan.hobby.name, status: user.wellbeingPlan.hobby.status }
       : null
-    const reply = await generateBuddyResponse(user.profile as Record<string, string>, history, messageNumber, isPaid, currentHobby)
+    const rawReply = await generateBuddyResponse(user.profile as Record<string, string>, history, messageNumber, isPaid, currentHobby)
+
+    // The buddy may embed a hidden hobby tag when the user commits to one.
+    // Detect it, persist the hobby (only if none is currently active), then
+    // strip the tag so it never appears in the message the user sees.
+    const hobbyTag = extractHobbyTag(rawReply)
+    const reply = stripHobbyTag(rawReply)
+
+    const hasActiveHobby = currentHobby?.name && currentHobby.status === 'active'
+    const setOps: Record<string, unknown> = { chatHistory: null, lastActive: new Date() }
+    if (hobbyTag && !hasActiveHobby) {
+      setOps['wellbeingPlan.hobby'] = {
+        name: hobbyTag.name,
+        category: 'healing',
+        duration: hobbyTag.duration,
+        learningMethod: 'self paced',
+        description: `A ${hobbyTag.duration} month journey with ${hobbyTag.name} to rebuild balance and rhythm.`,
+        startedAt: new Date(),
+        status: 'active',
+      }
+    }
 
     // Persist the full conversation so it loads across devices/sessions
-    const fullHistory = [...history, { role: 'assistant', content: reply }]
+    const fullHistory = [...history, { role: 'assistant', content: reply, at: new Date().toISOString() }]
+    setOps.chatHistory = fullHistory
     await User.findByIdAndUpdate(user._id, {
       $inc: { chatMessageCount: 1 },
-      $set: { chatHistory: fullHistory, lastActive: new Date() },
+      $set: setOps,
     })
 
-    return NextResponse.json({ reply, messageCount: count + 1, isPaid })
+    return NextResponse.json({ reply, messageCount: count + 1, isPaid, hobbyStarted: hobbyTag && !hasActiveHobby ? hobbyTag.name : null })
   } catch (err) {
     console.error('[chat/POST]', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -54,7 +75,7 @@ export async function GET() {
 
   try {
     await connectDB()
-    const user = await User.findById(session.user.id).select('chatMessageCount subscription profile chatHistory')
+    const user = await User.findById(session.user.id).select('chatMessageCount subscription profile chatHistory wellbeingPlan.hobby')
     if (!user) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
     // Opening the chat counts as activity.
@@ -70,6 +91,9 @@ export async function GET() {
       profile: user.profile,
       subscriptionPlan: user.subscription?.plan ?? 'none',
       history: user.chatHistory ?? [],
+      hobby: user.wellbeingPlan?.hobby?.name
+        ? { name: user.wellbeingPlan.hobby.name, status: user.wellbeingPlan.hobby.status ?? 'active' }
+        : null,
     })
   } catch (err) {
     console.error('[chat/GET]', err)

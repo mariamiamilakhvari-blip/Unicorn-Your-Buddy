@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { connectDB } from '@/lib/db'
 import User from '@/lib/models/User'
-import Challenge from '@/lib/models/Challenge'
 import Hobby from '@/lib/models/Hobby'
 import Notification from '@/lib/models/Notification'
 
@@ -57,7 +56,6 @@ export async function DELETE() {
     // Remove user + all related records
     await Promise.all([
       User.findByIdAndDelete(userId),
-      Challenge.deleteMany({ userId }),
       Hobby.deleteMany({ userId }),
       Notification.deleteMany({ userId }),
     ])

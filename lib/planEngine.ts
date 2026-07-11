@@ -7,6 +7,7 @@ import {
   generateSocialReminder,
   generateHobbyNotification,
   generateHobbyCheckIn,
+  generateHobbyCompletion,
   type HobbyStage,
 } from '@/lib/ai'
 
@@ -123,6 +124,30 @@ export async function evaluateUserPlan(userId: string): Promise<PlanResult> {
     const hobbyActive = plan.hobby?.name && plan.hobby?.startedAt &&
       plan.hobby?.status !== 'paused' && plan.hobby?.status !== 'completed'
     if (hobbyActive) {
+      // Completion: once the planned duration has elapsed, mark the hobby
+      // completed, send ONE final congratulations, and stop weekly nudges.
+      const startedAt = new Date(plan.hobby.startedAt)
+      const totalMs = (plan.hobby.duration ?? 6) * 30 * MS_24H
+      if (now.getTime() - startedAt.getTime() >= totalMs) {
+        await User.findByIdAndUpdate(user._id, { 'wellbeingPlan.hobby.status': 'completed' })
+        const alreadyCongratulated = await Notification.findOne({
+          userId: user._id, type: 'hobby', category: 'completed',
+        })
+        if (!alreadyCongratulated) {
+          const done = await generateHobbyCompletion(plan.hobby.name, profile)
+          await Notification.create({
+            userId: user._id,
+            type: 'hobby',
+            category: 'completed',
+            title: done.title,
+            body: done.body,
+            scheduledFor: now,
+          })
+        }
+        const currentRitualDone = await Notification.findOne({ userId: user._id, type: 'ritual' }).sort({ createdAt: -1 })
+        return { hobby: { ...plan.hobby, status: 'completed' }, ritual: currentRitualDone }
+      }
+
       const [lastHobbyNotif, lastEngagedNotif] = await Promise.all([
         Notification.findOne({ userId: user._id, type: 'hobby' }).sort({ createdAt: -1 }),
         Notification.findOne({ userId: user._id, type: 'hobby', completedAt: { $exists: true } }).sort({ completedAt: -1 }),

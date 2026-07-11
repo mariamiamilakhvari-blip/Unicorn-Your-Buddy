@@ -63,7 +63,7 @@ function ResetForm() {
           <Input id="confirm" type={showPw ? 'text' : 'password'} placeholder="Repeat password" value={confirm} onChange={e => setConfirm(e.target.value)} required />
         </div>
         {error && <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2.5 text-sm text-destructive">{error}</div>}
-        <Button type="submit" disabled={loading} className="w-full bg-ochre-400 text-black hover:bg-velvet-500 hover:text-white font-semibold h-11">
+        <Button type="submit" disabled={loading} className="w-full bg-[#60a5fa] text-white hover:bg-[#3b82f6] font-semibold h-11">
           {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
           Reset Password
         </Button>

@@ -1,7 +1,6 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
@@ -11,7 +10,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 export default function LoginPage() {
-  const router = useRouter()
   const { t } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,13 +21,21 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const result = await signIn('credentials', { email, password, redirect: false })
-    if (result?.ok) {
-      router.push('/home')
-    } else {
+    try {
+      const result = await signIn('credentials', { email, password, redirect: false })
+      if (result?.ok && !result.error) {
+        // Hard navigation: guarantees the fresh session cookie reaches middleware and
+        // bypasses any stale prefetched /home RSC entry resolved while unauthenticated.
+        window.location.assign('/home')
+        return
+      }
+      // NextAuth v5 may return { error } instead of throwing on bad credentials.
       setError(t('loginError'))
-      setLoading(false)
+    } catch {
+      // v5 also throws CredentialsSignin on invalid login; surface it instead of hanging.
+      setError(t('loginError'))
     }
+    setLoading(false)
   }
 
   function handleOAuth(provider: 'google' | 'apple') {

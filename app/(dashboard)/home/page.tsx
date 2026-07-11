@@ -5,9 +5,28 @@ import { Send, Sparkles, Lock, Heart, HeartCrack } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 
-type Message = { role: 'user' | 'assistant'; content: string }
+type Message = { role: 'user' | 'assistant'; content: string; at?: string }
 
 const OPENING = "Hey, I am your buddy Unicorn. I'm here for you. Whatever is going on in your relationship, you can share it with me. What's been happening?"
+
+// Time under a bubble: "14:32". Shows a date prefix when the day differs from the previous message.
+function fmtTime(at?: string) {
+  if (!at) return ''
+  const d = new Date(at)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+function fmtDay(at?: string) {
+  if (!at) return ''
+  const d = new Date(at)
+  if (isNaN(d.getTime())) return ''
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const dd = new Date(d); dd.setHours(0, 0, 0, 0)
+  if (dd.getTime() === today.getTime()) return 'Today'
+  const yest = new Date(today.getTime() - 86400000)
+  if (dd.getTime() === yest.getTime()) return 'Yesterday'
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })
+}
 
 // Inline formatting: **bold** and clickable links.
 function renderInline(text: string, k: string) {
@@ -83,6 +102,7 @@ export default function HomePage() {
   const [paywalled, setPaywalled] = useState(false)
   const [initialising, setInitialising] = useState(true)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [hobby, setHobby] = useState<{ name: string; status: string } | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const userName = session?.user?.name?.split(' ')[0] ?? ''
@@ -96,6 +116,7 @@ export default function HomePage() {
       .then(data => {
         setRemaining(data.remaining ?? null)
         setIsPaid(data.isPaid ?? false)
+        setHobby(data.hobby ?? null)
         if (!data.isPaid && (data.remaining ?? 5) <= 0) setPaywalled(true)
         // Load saved conversation: prefer DB (cross-device), fall back to this
         // browser's cached copy so older local chats still show.
@@ -132,7 +153,7 @@ export default function HomePage() {
     const text = input.trim()
     if (!text || loading) return
 
-    const userMsg: Message = { role: 'user', content: text }
+    const userMsg: Message = { role: 'user', content: text, at: new Date().toISOString() }
     const next = [...messages, userMsg]
     setMessages(next)
     setInput('')
@@ -153,11 +174,13 @@ export default function HomePage() {
         return
       }
 
-      setMessages(m => [...m, { role: 'assistant', content: data.reply }])
+      setMessages(m => [...m, { role: 'assistant', content: data.reply, at: new Date().toISOString() }])
       setRemaining(data.isPaid ? null : Math.max(0, 5 - data.messageCount))
       setIsPaid(data.isPaid)
+      // The buddy just registered a new hobby: show its badge right away.
+      if (data.hobbyStarted) setHobby({ name: data.hobbyStarted, status: 'active' })
     } catch {
-      setMessages(m => [...m, { role: 'assistant', content: "I'm here, just had a tiny hiccup. Try again?" }])
+      setMessages(m => [...m, { role: 'assistant', content: "I'm here, just had a tiny hiccup. Try again?", at: new Date().toISOString() }])
     } finally {
       setLoading(false)
     }
@@ -203,6 +226,21 @@ export default function HomePage() {
             <span className="text-xs font-bold uppercase tracking-wide text-velvet-500">Unicorn</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">{userName ? `Hey, ${userName}` : 'Hey'}</h1>
+          {hobby?.name && (
+            <span
+              className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold border ${
+                hobby.status === 'completed'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : hobby.status === 'paused'
+                  ? 'bg-gray-50 text-gray-500 border-gray-200'
+                  : 'bg-velvet-50 text-velvet-700 border-velvet-200'
+              }`}
+            >
+              <Sparkles className="h-3 w-3" />
+              {hobby.name}
+              {hobby.status === 'completed' ? ' · done' : hobby.status === 'paused' ? ' · paused' : ''}
+            </span>
+          )}
         </div>
         {!isPaid && remaining !== null && (
           <div className="flex flex-col items-end gap-1">
@@ -224,17 +262,31 @@ export default function HomePage() {
 
       {/* Chat thread */}
       <div className="flex-1 overflow-y-auto space-y-3 pr-1 mb-4 [&::-webkit-scrollbar]:w-0.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-blue-400 [&::-webkit-scrollbar-thumb]:rounded-full">
-        {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-              m.role === 'user'
-                ? 'bg-velvet-500 text-white rounded-br-sm'
-                : 'bg-white border border-border text-gray-800 rounded-bl-sm shadow-sm'
-            }`}>
-              {m.role === 'assistant' ? renderRichText(m.content) : m.content}
+        {messages.map((m, i) => {
+          const prev = messages[i - 1]
+          const dayLabel = fmtDay(m.at)
+          const showDay = m.at && dayLabel && fmtDay(prev?.at) !== dayLabel
+          const time = fmtTime(m.at)
+          return (
+            <div key={i}>
+              {showDay && (
+                <div className="flex justify-center my-3">
+                  <span className="text-[11px] font-medium text-gray-400 bg-gray-100 rounded-full px-3 py-1">{dayLabel}</span>
+                </div>
+              )}
+              <div className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+                <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                  m.role === 'user'
+                    ? 'bg-velvet-500 text-white rounded-br-sm'
+                    : 'bg-white border border-border text-gray-800 rounded-bl-sm shadow-sm'
+                }`}>
+                  {m.role === 'assistant' ? renderRichText(m.content) : m.content}
+                </div>
+                {time && <span className="text-[11px] text-gray-400 mt-1 px-1">{time}</span>}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
 
         {loading && (
           <div className="flex justify-start">

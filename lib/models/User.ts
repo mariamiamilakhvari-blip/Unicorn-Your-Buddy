@@ -55,7 +55,7 @@ export interface IUser extends Document {
     dodoSubscriptionId?: string
   }
   chatMessageCount: number
-  chatHistory: { role: 'user' | 'assistant'; content: string }[]
+  chatHistory: { role: 'user' | 'assistant'; content: string; at?: string }[]
   lastActive: Date
   lastInactivityPingAt?: Date
   wellbeingPlan?: {
@@ -143,7 +143,7 @@ const UserSchema = new Schema<IUser>({
     dodoSubscriptionId: String,
   },
   chatMessageCount: { type: Number, default: 0 },
-  chatHistory: { type: [{ role: String, content: String, _id: false }], default: [] },
+  chatHistory: { type: [{ role: String, content: String, at: String, _id: false }], default: [] },
   lastActive: { type: Date, default: Date.now },
   lastInactivityPingAt: Date,
   wellbeingPlan: {

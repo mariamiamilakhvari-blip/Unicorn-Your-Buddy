@@ -7,6 +7,7 @@ import { signOut as nextAuthSignOut, useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { NotificationBell } from '@/components/dashboard/NotificationBell'
 
 export function TopNav() {
   const pathname = usePathname()
@@ -43,6 +44,7 @@ export function TopNav() {
       {/* Right side */}
       <div className="relative flex items-center gap-2">
         <LanguageSwitcher />
+        <NotificationBell />
         <button
           onClick={() => setMenuOpen(o => !o)}
           className="flex items-center gap-2 px-4 py-2 rounded-full border-2 border-[#a8d8f0] bg-white/80 backdrop-blur-md text-black hover:bg-[#e8f5fd] transition-colors text-sm font-semibold shadow-sm"

@@ -28,7 +28,7 @@ const PAGE_DEFAULTS: Record<string, Record<string, string>> = {
     'process.step1.desc': 'Sign up for free. It takes under 60 seconds.',
     'process.step2.num': '02',
     'process.step2.title': 'Build your profile',
-    'process.step2.desc': 'Answer 7 questions.',
+    'process.step2.desc': 'Answer 8 questions.',
     'process.step3.num': '03',
     'process.step3.title': 'Start chat',
     'process.step3.desc': 'Get advice about your romantic relationship.',

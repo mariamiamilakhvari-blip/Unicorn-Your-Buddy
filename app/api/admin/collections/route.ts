@@ -10,7 +10,7 @@ async function requireAdmin() {
   return session
 }
 
-const ALLOWED_COLLECTIONS = ['users', 'challenges', 'hobbies', 'notifications', 'siteconfigs', 'pagecontents']
+const ALLOWED_COLLECTIONS = ['users', 'hobbies', 'notifications', 'siteconfigs', 'pagecontents']
 
 function getCollection(name: string) {
   if (!ALLOWED_COLLECTIONS.includes(name.toLowerCase())) return null

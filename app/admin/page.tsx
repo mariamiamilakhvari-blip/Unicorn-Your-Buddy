@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Users, TrendingUp, CreditCard, Activity, Target, BookOpen } from 'lucide-react'
+import { Users, TrendingUp, CreditCard, BookOpen, Bell, Zap, UserCheck } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import {
   ChartContainer,
@@ -26,8 +26,8 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 
 type Stats = {
-  totals: { users: number; newThisMonth: number; activeSubscriptions: number; challenges: number; hobbies: number }
-  subscriptions: { free_trial: number; monthly: number; yearly: number }
+  totals: { users: number; newThisMonth: number; activeSubscriptions: number; activeUsers7d: number; premiumPlus: number; notifications: number; hobbies: number }
+  subscriptions: { free_trial: number; monthly: number; yearly: number; premium: number }
   signupsByDay: { date: string; users: number }[]
   subscriptionBreakdown: { plan: string; count: number }[]
   onboarding: { completed: number; pending: number }
@@ -103,6 +103,7 @@ export default function AdminDashboard() {
     { plan: 'Free Trial', count: stats.subscriptions.free_trial },
     { plan: 'Monthly', count: stats.subscriptions.monthly },
     { plan: 'Yearly', count: stats.subscriptions.yearly },
+    { plan: 'Premium', count: stats.subscriptions.premium },
   ]
 
   const onboardingData = [
@@ -124,11 +125,13 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Users" value={stats.totals.users} icon={Users} />
         <StatCard label="New This Month" value={stats.totals.newThisMonth} icon={TrendingUp} sub="+last 30 days" />
+        <StatCard label="Active (7d)" value={stats.totals.activeUsers7d} icon={UserCheck} sub="recently used the app" />
         <StatCard label="Active Subs" value={stats.totals.activeSubscriptions} icon={CreditCard} />
-        <StatCard label="Challenges" value={stats.totals.challenges} icon={Target} />
+        <StatCard label="Premium Plus" value={stats.totals.premiumPlus} icon={Zap} sub="car dating add-on" />
+        <StatCard label="Notifications" value={stats.totals.notifications} icon={Bell} sub="sent all-time" />
         <StatCard label="Hobbies" value={stats.totals.hobbies} icon={BookOpen} />
       </div>
 

@@ -9,7 +9,7 @@ import SiteConfig from '@/lib/models/SiteConfig'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Unicorn Well-Being',
+  title: 'Unicorn, Your Buddy',
   description: 'Your personal mental health and well-being companion',
   icons: { icon: '/favicon.ico' },
 }

@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { connectDB } from '@/lib/db'
 import User from '@/lib/models/User'
-import Challenge from '@/lib/models/Challenge'
 import Hobby from '@/lib/models/Hobby'
+import Notification from '@/lib/models/Notification'
 
 async function requireAdmin() {
   const session = await auth()
@@ -18,6 +18,7 @@ export async function GET() {
 
   const now = new Date()
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
   const [
     totalUsers,
@@ -26,7 +27,10 @@ export async function GET() {
     freeTrialUsers,
     monthlyUsers,
     yearlyUsers,
-    totalChallenges,
+    premiumUsers,
+    premiumPlusUsers,
+    activeUsers7d,
+    totalNotifications,
     totalHobbies,
     signupsByDay,
     subscriptionBreakdown,
@@ -38,7 +42,10 @@ export async function GET() {
     User.countDocuments({ 'subscription.plan': 'free_trial' }),
     User.countDocuments({ 'subscription.plan': 'monthly' }),
     User.countDocuments({ 'subscription.plan': 'yearly' }),
-    Challenge.countDocuments(),
+    User.countDocuments({ 'subscription.plan': 'premium' }),
+    User.countDocuments({ 'premiumPlus.active': true }),
+    User.countDocuments({ lastActive: { $gte: sevenDaysAgo } }),
+    Notification.countDocuments(),
     Hobby.countDocuments(),
     User.aggregate([
       { $match: { createdAt: { $gte: thirtyDaysAgo } } },
@@ -81,13 +88,16 @@ export async function GET() {
       users: totalUsers,
       newThisMonth: newUsersThisMonth,
       activeSubscriptions,
-      challenges: totalChallenges,
+      activeUsers7d,
+      premiumPlus: premiumPlusUsers,
+      notifications: totalNotifications,
       hobbies: totalHobbies,
     },
     subscriptions: {
       free_trial: freeTrialUsers,
       monthly: monthlyUsers,
       yearly: yearlyUsers,
+      premium: premiumUsers,
     },
     signupsByDay: days,
     subscriptionBreakdown: subscriptionBreakdown.map((s: { _id: string; count: number }) => ({

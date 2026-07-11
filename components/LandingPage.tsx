@@ -1,7 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight, CheckCircle2, Menu, X, Moon, Sun, ShieldCheck } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Menu, X, Moon, Sun, ShieldCheck, ChevronDown } from 'lucide-react'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
@@ -11,12 +11,18 @@ interface LandingPageProps {
   isPaid?: boolean
 }
 
+// Slide ids in scroll order, used by the dot navigation + anchor links.
+const SLIDES = ['hero', 'how-it-works', 'pricing', 'about'] as const
+
 export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPageProps) {
   const { t } = useLanguage()
   const [menuOpen, setMenuOpen] = useState(false)
   const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly')
   const [dark, setDark] = useState(false)
   const [subscribing, setSubscribing] = useState(false)
+  const [active, setActive] = useState(0)
+
+  const scrollRef = useRef<HTMLElement>(null)
 
   const MONTHLY_PRICE = 12.99
   const YEARLY_PRICE = 99.76
@@ -34,6 +40,35 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
     }
   }
 
+  // Reveal-on-enter + track which slide is active (for dots + nav highlight).
+  useEffect(() => {
+    const root = scrollRef.current
+    if (!root) return
+
+    const revealItems = root.querySelectorAll<HTMLElement>('[data-reveal]')
+    const revealObs = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('is-in') }),
+      { root, threshold: 0.2 },
+    )
+    revealItems.forEach(el => revealObs.observe(el))
+
+    const slides = root.querySelectorAll<HTMLElement>('[data-slide]')
+    const activeObs = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        if (e.isIntersecting) setActive(Number((e.target as HTMLElement).dataset.index))
+      }),
+      { root, threshold: 0.55 },
+    )
+    slides.forEach(el => activeObs.observe(el))
+
+    return () => { revealObs.disconnect(); activeObs.disconnect() }
+  }, [])
+
+  function goTo(i: number) {
+    const root = scrollRef.current
+    root?.querySelector<HTMLElement>(`[data-index="${i}"]`)?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   const STEPS = [
     { num: t('step1Num'), title: t('step1Title'), desc: t('step1Desc') },
     { num: t('step2Num'), title: t('step2Title'), desc: t('step2Desc') },
@@ -46,7 +81,20 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
   ]
 
   return (
-    <div className={`min-h-screen bg-white text-black${dark ? ' dark' : ''}`}>
+    <div className={`h-screen overflow-hidden bg-white text-black${dark ? ' dark' : ''}`}>
+      {/* Scroll-snap + reveal styles (deck-in-scroll behaviour) */}
+      <style>{`
+        .snap-deck { scroll-snap-type: y mandatory; scroll-behavior: smooth; scroll-padding-top: 0; }
+        .snap-deck::-webkit-scrollbar { width: 0; height: 0; }
+        .snap-deck { scrollbar-width: none; }
+        .deck-slide { scroll-snap-align: start; scroll-snap-stop: always; }
+        [data-reveal] { opacity: 0; transform: translateY(36px); transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1); transition-delay: var(--d, 0ms); }
+        [data-reveal].is-in { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+          .snap-deck { scroll-behavior: auto; }
+          [data-reveal] { opacity: 1 !important; transform: none !important; transition: none; }
+        }
+      `}</style>
 
       {/* NAVBAR */}
       <header className="fixed top-0 left-0 right-0 z-50 px-8 py-4 flex items-center justify-between bg-white/70 dark:bg-gray-900/80 backdrop-blur-md border-b border-sky-100/50 dark:border-gray-700">
@@ -56,9 +104,9 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
         </Link>
 
         <nav className="hidden md:flex bg-white/90 dark:bg-gray-900/80 backdrop-blur-md rounded-full border border-sky-100 dark:border-gray-700 shadow-sm px-3 py-1.5 items-center gap-1 text-sm font-medium absolute left-1/2 -translate-x-1/2">
-          <a href="#how-it-works" className="px-3 py-1.5 text-slate-700 dark:text-white hover:text-velvet-500 transition-colors">{t('navHowItWorks')}</a>
-          <a href="#pricing" className="px-3 py-1.5 text-slate-700 dark:text-white hover:text-velvet-500 transition-colors">{t('navPricing')}</a>
-          <a href="#about" className="px-3 py-1.5 text-slate-700 dark:text-white hover:text-velvet-500 transition-colors">{t('navAbout')}</a>
+          <button onClick={() => goTo(1)} className="px-3 py-1.5 text-slate-700 dark:text-white hover:text-velvet-500 transition-colors">{t('navHowItWorks')}</button>
+          <button onClick={() => goTo(2)} className="px-3 py-1.5 text-slate-700 dark:text-white hover:text-velvet-500 transition-colors">{t('navPricing')}</button>
+          <button onClick={() => goTo(3)} className="px-3 py-1.5 text-slate-700 dark:text-white hover:text-velvet-500 transition-colors">{t('navAbout')}</button>
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
@@ -108,9 +156,9 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
 
         {menuOpen && (
           <div className="absolute top-20 left-4 right-4 md:hidden bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xl px-6 py-5 flex flex-col gap-4 text-sm font-medium text-black dark:text-white">
-            <a href="#how-it-works" onClick={() => setMenuOpen(false)}>{t('navHowItWorks')}</a>
-            <a href="#pricing" onClick={() => setMenuOpen(false)}>{t('navPricing')}</a>
-            <a href="#about" onClick={() => setMenuOpen(false)}>{t('navAbout')}</a>
+            <button className="text-left" onClick={() => { setMenuOpen(false); goTo(1) }}>{t('navHowItWorks')}</button>
+            <button className="text-left" onClick={() => { setMenuOpen(false); goTo(2) }}>{t('navPricing')}</button>
+            <button className="text-left" onClick={() => { setMenuOpen(false); goTo(3) }}>{t('navAbout')}</button>
             {isLoggedIn ? (
               <>
                 {isAdmin && <Link href="/admin" className="text-velvet-700 font-semibold flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" />Admin</Link>}
@@ -126,142 +174,180 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
         )}
       </header>
 
-      {/* HERO */}
-      <section className="min-h-screen bg-gradient-to-b from-[#cce6f7] via-[#ddf0fb] to-[#e8f5fd] dark:bg-gray-900 flex flex-col items-center justify-center text-center px-8">
-        <p className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-6">{t('heroLabel')}</p>
-        <h1 className="text-5xl md:text-7xl font-black text-black dark:text-white leading-tight mb-6 max-w-3xl">
-          {t('heroTitle1')}{' '}
-          <span className="text-velvet-600">{t('heroTitleHighlight')}</span>{' '}
-          {t('heroTitle2')}
-        </h1>
-        <p className="text-lg md:text-xl text-slate-600 dark:text-gray-300 max-w-xl leading-relaxed">
-          {t('heroSubtitle')}
-        </p>
-        <Link href="/signup" className="mt-12 flex items-center gap-2 bg-velvet-600 text-white font-bold px-8 py-4 rounded-full shadow-xl hover:bg-velvet-700 transition-all text-base">
-          {t('heroStartFree')} <ArrowRight className="h-4 w-4" />
-        </Link>
-        <p className="mt-4 text-sm text-sky-400 dark:text-sky-500">{t('heroFreeNote')}</p>
-      </section>
+      {/* SLIDE DOT NAV */}
+      <div className="hidden md:flex fixed right-6 top-1/2 -translate-y-1/2 z-40 flex-col gap-3">
+        {SLIDES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            aria-label={`Go to slide ${i + 1}`}
+            className={`w-3 h-3 rounded-full border transition-all duration-300 ${
+              active === i
+                ? 'bg-velvet-600 border-velvet-600 scale-125'
+                : 'bg-transparent border-velvet-300 hover:border-velvet-500'
+            }`}
+          />
+        ))}
+      </div>
 
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" className="py-32 bg-[#ddeefa] dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-8 md:px-12">
-          <p className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-16">{t('howLabel')}</p>
-          <div className="grid md:grid-cols-3 gap-6">
-            {STEPS.map(s => (
-              <div key={s.num} className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-                <div className="text-7xl font-black text-velvet-700 dark:text-velvet-400 mb-4 leading-none">{s.num}</div>
-                <h3 className="text-xl font-bold text-black dark:text-white mb-2">{s.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* SCROLL-SNAP DECK */}
+      <main ref={scrollRef} className="snap-deck h-screen overflow-y-scroll">
 
-      {/* PRICING */}
-      <section id="pricing" className="py-32 bg-[#ddeefa] dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-8 md:px-12">
-          <p className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-16">{t('pricingLabel')}</p>
+        {/* SLIDE 1 — HERO */}
+        <section
+          data-slide data-index="0" id="hero"
+          className="deck-slide relative h-screen bg-gradient-to-b from-[#cce6f7] via-[#ddf0fb] to-[#e8f5fd] dark:bg-gray-900 flex flex-col items-center justify-center text-center px-8"
+        >
+          <p data-reveal className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-6">{t('heroLabel')}</p>
+          <h1 data-reveal style={{ ['--d' as string]: '80ms' }} className="text-5xl md:text-7xl font-black text-black dark:text-white leading-tight mb-6 max-w-3xl">
+            {t('heroTitle1')}{' '}
+            <span className="text-velvet-600">{t('heroTitleHighlight')}</span>{' '}
+            {t('heroTitle2')}
+          </h1>
+          <p data-reveal style={{ ['--d' as string]: '160ms' }} className="text-lg md:text-xl text-slate-600 dark:text-gray-300 max-w-xl leading-relaxed">
+            {t('heroSubtitle')}
+          </p>
+          <Link data-reveal style={{ ['--d' as string]: '240ms' }} href="/signup" className="mt-12 flex items-center gap-2 bg-velvet-600 text-white font-bold px-8 py-4 rounded-full shadow-xl hover:bg-velvet-700 transition-all text-base">
+            {t('heroStartFree')} <ArrowRight className="h-4 w-4" />
+          </Link>
+          <p data-reveal style={{ ['--d' as string]: '320ms' }} className="mt-4 text-sm text-sky-400 dark:text-sky-500">{t('heroFreeNote')}</p>
 
-          <div className="flex mb-10">
-            <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full p-1 flex gap-1">
-              <button
-                onClick={() => setPlan('monthly')}
-                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
-                  plan === 'monthly'
-                    ? 'bg-black dark:bg-white text-white dark:text-black shadow'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                {t('pricingMonthly')}
-              </button>
-              <button
-                onClick={() => setPlan('yearly')}
-                className={`px-6 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
-                  plan === 'yearly'
-                    ? 'bg-black dark:bg-white text-white dark:text-black shadow'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'
-                }`}
-              >
-                {t('pricingYearly')}
-                <span className="px-2 py-0.5 rounded-full bg-velvet-600 text-white text-xs font-bold">
-                  Save {landingSavings}%
-                </span>
-              </button>
-            </div>
-          </div>
+          <button onClick={() => goTo(1)} aria-label="Scroll down" className="absolute bottom-8 left-1/2 -translate-x-1/2 text-velvet-500/70 animate-bounce">
+            <ChevronDown className="h-7 w-7" />
+          </button>
+        </section>
 
-          <div className="max-w-lg">
-            {/* Base Premium */}
-            <div className="bg-velvet-700 rounded-2xl p-10 text-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-56 h-56 bg-velvet-600 rounded-full -translate-y-1/3 translate-x-1/4" />
-              <div className="text-sm font-bold text-white mb-3">{t('pricingPremium')}</div>
-              <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-5xl font-black">{plan === 'yearly' ? `$${YEARLY_PRICE}` : `$${MONTHLY_PRICE}`}</span>
-                <span className="text-white/70 text-sm">/ {plan === 'yearly' ? t('pricingPerYear') : t('pricingPerMonth')}</span>
-              </div>
-              <div className="text-sky-300 text-sm mb-8">{t('pricingCancelAnytime')}</div>
-              <ul className="space-y-3 mb-10">
-                {PREMIUM_FEATURES.map(f => (
-                  <li key={f} className="flex items-center gap-3 text-sm text-white">
-                    <CheckCircle2 className="h-4 w-4 text-sky-300 shrink-0" />{f}
-                  </li>
-                ))}
-              </ul>
-              {isPaid ? (
-                <div className="mt-3 w-full text-center py-3.5 rounded-full bg-white/10 border border-white/20 text-white/80 font-bold">
-                  ✓ Current plan
+        {/* SLIDE 2 — HOW IT WORKS */}
+        <section
+          data-slide data-index="1" id="how-it-works"
+          className="deck-slide h-screen bg-[#ddeefa] dark:bg-gray-800 flex items-center"
+        >
+          <div className="w-full max-w-7xl mx-auto px-8 md:px-12">
+            <p data-reveal className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-16">{t('howLabel')}</p>
+            <div className="grid md:grid-cols-3 gap-6">
+              {STEPS.map((s, i) => (
+                <div key={s.num} data-reveal style={{ ['--d' as string]: `${i * 120}ms` }} className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <div className="text-7xl font-black text-velvet-700 dark:text-velvet-400 mb-4 leading-none">{s.num}</div>
+                  <h3 className="text-xl font-bold text-black dark:text-white mb-2">{s.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm">{s.desc}</p>
                 </div>
-              ) : (
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* SLIDE 3 — PRICING */}
+        <section
+          data-slide data-index="2" id="pricing"
+          className="deck-slide h-screen bg-[#ddeefa] dark:bg-gray-800 flex items-center"
+        >
+          <div className="w-full max-w-7xl mx-auto px-8 md:px-12">
+            <p data-reveal className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-16">{t('pricingLabel')}</p>
+
+            <div data-reveal style={{ ['--d' as string]: '80ms' }} className="flex mb-10">
+              <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full p-1 flex gap-1">
                 <button
-                  onClick={handleSubscribe}
-                  disabled={subscribing}
-                  className="mt-3 block w-full text-center py-3.5 rounded-full bg-velvet-500 border border-white/30 text-white font-bold hover:bg-velvet-400 transition-colors disabled:opacity-60"
+                  onClick={() => setPlan('monthly')}
+                  className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                    plan === 'monthly'
+                      ? 'bg-black dark:bg-white text-white dark:text-black shadow'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'
+                  }`}
                 >
-                  {subscribing ? 'Loading…' : 'Buy Premium'}
+                  {t('pricingMonthly')}
                 </button>
-              )}
+                <button
+                  onClick={() => setPlan('yearly')}
+                  className={`px-6 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 ${
+                    plan === 'yearly'
+                      ? 'bg-black dark:bg-white text-white dark:text-black shadow'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  {t('pricingYearly')}
+                  <span className="px-2 py-0.5 rounded-full bg-velvet-600 text-white text-xs font-bold">
+                    Save {landingSavings}%
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div data-reveal style={{ ['--d' as string]: '160ms' }} className="max-w-lg">
+              {/* Base Premium */}
+              <div className="bg-velvet-700 rounded-2xl p-10 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-56 h-56 bg-velvet-600 rounded-full -translate-y-1/3 translate-x-1/4" />
+                <div className="text-sm font-bold text-white mb-3">{t('pricingPremium')}</div>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-5xl font-black">{plan === 'yearly' ? `$${YEARLY_PRICE}` : `$${MONTHLY_PRICE}`}</span>
+                  <span className="text-white/70 text-sm">/ {plan === 'yearly' ? t('pricingPerYear') : t('pricingPerMonth')}</span>
+                </div>
+                <div className="text-sky-300 text-sm mb-8">{t('pricingCancelAnytime')}</div>
+                <ul className="space-y-3 mb-10">
+                  {PREMIUM_FEATURES.map(f => (
+                    <li key={f} className="flex items-center gap-3 text-sm text-white">
+                      <CheckCircle2 className="h-4 w-4 text-sky-300 shrink-0" />{f}
+                    </li>
+                  ))}
+                </ul>
+                {isPaid ? (
+                  <div className="mt-3 w-full text-center py-3.5 rounded-full bg-white/10 border border-white/20 text-white/80 font-bold">
+                    ✓ Current plan
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleSubscribe}
+                    disabled={subscribing}
+                    className="mt-3 block w-full text-center py-3.5 rounded-full bg-velvet-500 border border-white/30 text-white font-bold hover:bg-velvet-400 transition-colors disabled:opacity-60"
+                  >
+                    {subscribing ? 'Loading…' : 'Buy Premium'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ABOUT US */}
-      <section id="about" className="py-16 bg-[#ddeefa] dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-8 md:px-12">
-          <p className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-6">{t('aboutLabel')}</p>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-10 shadow-sm border border-gray-100 dark:border-gray-700">
-              <h3 className="text-2xl font-bold text-black dark:text-white mb-3">{t('aboutCard2Title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">{t('aboutCard2Body')}</p>
-            </div>
-            <div className="bg-white dark:bg-gray-900 rounded-2xl p-10 shadow-sm border border-gray-100 dark:border-gray-700">
-              <h3 className="text-2xl font-bold text-black dark:text-white mb-3">{t('aboutCard3Title')}</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">{t('aboutCard3Body')}</p>
+        {/* SLIDE 4 — ABOUT + FOOTER */}
+        <section
+          data-slide data-index="3" id="about"
+          className="deck-slide h-screen bg-[#ddeefa] dark:bg-gray-800 flex flex-col"
+        >
+          <div className="flex-1 flex items-center">
+            <div className="w-full max-w-7xl mx-auto px-8 md:px-12">
+              <p data-reveal className="text-xs font-mono tracking-widest text-sky-400 dark:text-sky-500 uppercase mb-6">{t('aboutLabel')}</p>
+              <div className="grid md:grid-cols-2 gap-8">
+                <div data-reveal className="bg-white dark:bg-gray-900 rounded-2xl p-10 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <h3 className="text-2xl font-bold text-black dark:text-white mb-3">{t('aboutCard2Title')}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">{t('aboutCard2Body')}</p>
+                </div>
+                <div data-reveal style={{ ['--d' as string]: '120ms' }} className="bg-white dark:bg-gray-900 rounded-2xl p-10 shadow-sm border border-gray-100 dark:border-gray-700">
+                  <h3 className="text-2xl font-bold text-black dark:text-white mb-3">{t('aboutCard3Title')}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">{t('aboutCard3Body')}</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* FOOTER */}
-      <footer className="bg-black text-gray-400 py-12">
-        <div className="max-w-7xl mx-auto px-8 md:px-12">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2 text-white font-bold text-lg">
-              <div className="w-8 h-8 rounded-lg bg-velvet-500 flex items-center justify-center text-base">🦄</div>
-              Unicorn, Your Buddy
+          {/* FOOTER */}
+          <footer className="bg-black text-gray-400 py-12">
+            <div className="max-w-7xl mx-auto px-8 md:px-12">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-2 text-white font-bold text-lg">
+                  <div className="w-8 h-8 rounded-lg bg-velvet-500 flex items-center justify-center text-base">🦄</div>
+                  Unicorn, Your Buddy
+                </div>
+                <div className="flex items-center gap-6 text-sm">
+                  <button onClick={() => goTo(2)} className="hover:text-white transition-colors">{t('navPricing')}</button>
+                  <Link href="/login" className="hover:text-white transition-colors">{t('navSignIn')}</Link>
+                  <Link href="/signup" className="hover:text-white transition-colors">{t('navGetStarted')}</Link>
+                </div>
+                <p className="text-sm">{t('footerCopy')}</p>
+              </div>
             </div>
-            <div className="flex items-center gap-6 text-sm">
-              <a href="#pricing" className="hover:text-white transition-colors">{t('navPricing')}</a>
-              <Link href="/login" className="hover:text-white transition-colors">{t('navSignIn')}</Link>
-              <Link href="/signup" className="hover:text-white transition-colors">{t('navGetStarted')}</Link>
-            </div>
-            <p className="text-sm">{t('footerCopy')}</p>
-          </div>
-        </div>
-      </footer>
+          </footer>
+        </section>
 
+      </main>
     </div>
   )
 }

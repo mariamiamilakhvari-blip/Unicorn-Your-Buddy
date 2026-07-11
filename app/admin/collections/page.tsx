@@ -18,7 +18,6 @@ type Doc = Record<string, unknown>
 
 const COLLECTION_DESCRIPTIONS: Record<string, string> = {
   users: 'Registered user accounts',
-  challenges: '21-day challenges per user',
   hobbies: '3-month hobby programs',
   notifications: 'User notification records',
   siteconfigs: 'Theme & site configuration',
