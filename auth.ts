@@ -78,14 +78,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id ?? ''
         token.onboardingCompleted = user.onboardingCompleted ?? false
         token.role = user.role ?? 'user'
-      } else if (token.id) {
-        await connectDB()
-        const dbUser = await User.findById(token.id).select('role onboardingCompleted image').lean() as { role?: 'user' | 'admin'; onboardingCompleted?: boolean; image?: string } | null
-        if (dbUser) {
-          token.role = dbUser.role ?? 'user'
-          token.onboardingCompleted = dbUser.onboardingCompleted ?? false
-          if (dbUser.image) token.picture = dbUser.image
-        }
+        return token
+      }
+      // Refresh role/onboarding from the DB on every request. If token.id no
+      // longer resolves (e.g. the database was rebuilt and the account got a
+      // new _id), self-heal by looking the user up via their email and
+      // repairing token.id, so existing sessions don't silently break.
+      await connectDB()
+      type Lean = { _id: unknown; role?: 'user' | 'admin'; onboardingCompleted?: boolean; image?: string } | null
+      let dbUser: Lean = token.id
+        ? (await User.findById(token.id).select('role onboardingCompleted image').lean() as Lean)
+        : null
+      if (!dbUser && token.email) {
+        dbUser = await User.findOne({ email: token.email }).select('role onboardingCompleted image').lean() as Lean
+        if (dbUser) token.id = String(dbUser._id)
+      }
+      if (dbUser) {
+        token.role = dbUser.role ?? 'user'
+        token.onboardingCompleted = dbUser.onboardingCompleted ?? false
+        if (dbUser.image) token.picture = dbUser.image
       }
       return token
     },
