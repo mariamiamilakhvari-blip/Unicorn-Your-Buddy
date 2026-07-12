@@ -103,6 +103,7 @@ export default function HomePage() {
   const [initialising, setInitialising] = useState(true)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [hobby, setHobby] = useState<{ name: string; status: string } | null>(null)
+  const [viewportH, setViewportH] = useState<number | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const userName = session?.user?.name?.split(' ')[0] ?? ''
@@ -148,6 +149,22 @@ export default function HomePage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
+
+  // Size the chat to the actual visible viewport. When the mobile keyboard
+  // opens, visualViewport.height shrinks, so the input stays above it even on
+  // browsers that ignore the interactive-widget hint.
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => setViewportH(vv.height)
+    update()
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
+  }, [])
 
   async function send() {
     const text = input.trim()
@@ -217,7 +234,10 @@ export default function HomePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col h-[calc(100dvh-8rem)]">
+    <div
+      className="max-w-2xl mx-auto flex flex-col h-[calc(100dvh-8rem)]"
+      style={viewportH ? { height: `${viewportH - 112}px` } : undefined}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-4 shrink-0">
         <div>
