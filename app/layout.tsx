@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Providers } from '@/components/providers'
@@ -12,6 +12,14 @@ export const metadata: Metadata = {
   title: 'Unicorn, Your Buddy',
   description: 'Your personal mental health and well-being companion',
   icons: { icon: '/favicon.ico' },
+}
+
+// resizes-content: when the on-screen keyboard opens on mobile, shrink the
+// viewport so 100dvh layouts (the chat) keep the input above the keyboard.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  interactiveWidget: 'resizes-content',
 }
 
 async function getThemeCss(): Promise<string> {

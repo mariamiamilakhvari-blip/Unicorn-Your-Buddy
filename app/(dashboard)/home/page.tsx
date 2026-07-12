@@ -329,6 +329,11 @@ export default function HomePage() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKey}
+            onFocus={e => {
+              // Fallback for mobile browsers that ignore interactive-widget:
+              // bring the input into view once the keyboard settles.
+              setTimeout(() => e.target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300)
+            }}
             placeholder="Tell Unicorn about your relationship. What's going on..."
             rows={1}
             disabled={loading}
