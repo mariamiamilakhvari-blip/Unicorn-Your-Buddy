@@ -39,7 +39,7 @@ const COUNTRIES: string[] = [
 
 const QUESTIONS: Question[] = [
   { id: 'genderIdentity', question: 'How do you identify?', subtitle: 'This helps us personalise your experience', type: 'single', options: [{ label: 'Male' }, { label: 'Female' }, { label: 'Non-binary' }] },
-  { id: 'ageCohort', question: 'What is your age group?', type: 'single', options: [{ label: '18, 24' }, { label: '25, 34' }, { label: '35, 44' }, { label: '45, 54' }, { label: '55+' }] },
+  { id: 'ageCohort', question: 'What is your age group?', type: 'single', options: [{ label: '18-24' }, { label: '25-34' }, { label: '35-44' }, { label: '45-54' }, { label: '55+' }] },
   { id: 'country', question: 'Where do you live?', type: 'select', options: COUNTRIES.map(c => ({ label: c })) },
   { id: 'occupation', question: 'What is your occupation?', type: 'select', options: [
     { label: 'Student' },
