@@ -26,6 +26,8 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
 
   const MONTHLY_PRICE = 12.99
   const YEARLY_PRICE = 99.76
+  const YEARLY_ORIGINAL = +(MONTHLY_PRICE * 12).toFixed(2)   // 155.88
+  const YEARLY_SAVE = +(YEARLY_ORIGINAL - YEARLY_PRICE).toFixed(2) // 56.12
   const landingSavings = Math.round(((MONTHLY_PRICE * 12 - YEARLY_PRICE) / (MONTHLY_PRICE * 12)) * 100)
 
   async function handleSubscribe() {
@@ -276,12 +278,22 @@ export function LandingPage({ isLoggedIn, isAdmin, isPaid = false }: LandingPage
               {/* Base Premium */}
               <div className="bg-velvet-700 rounded-2xl p-10 text-white relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-56 h-56 bg-velvet-600 rounded-full -translate-y-1/3 translate-x-1/4" />
-                <div className="text-sm font-bold text-white mb-3">{t('pricingPremium')}</div>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-5xl font-black">{plan === 'yearly' ? `$${YEARLY_PRICE}` : `$${MONTHLY_PRICE}`}</span>
-                  <span className="text-white/70 text-sm">/ {plan === 'yearly' ? t('pricingPerYear') : t('pricingPerMonth')}</span>
+                <div className="relative z-10">
+                  <div className="text-sm font-bold text-white mb-3">{t('pricingPremium')}</div>
+                  <div className="flex items-baseline gap-1 mb-1 flex-wrap">
+                    <span className="text-4xl sm:text-5xl font-black break-words">{plan === 'yearly' ? `$${YEARLY_PRICE}` : `$${MONTHLY_PRICE}`}</span>
+                    <span className="text-white/70 text-sm">/ {plan === 'yearly' ? t('pricingPerYear') : t('pricingPerMonth')}</span>
+                  </div>
+                  {plan === 'yearly' && (
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-white/50 line-through text-base">${YEARLY_ORIGINAL}</span>
+                      <span className="px-2 py-0.5 rounded-full bg-sky-400/20 text-sky-200 text-xs font-bold">
+                        Save ${YEARLY_SAVE} ({landingSavings}%)
+                      </span>
+                    </div>
+                  )}
+                  <div className="text-sky-300 text-sm mb-8">{t('pricingCancelAnytime')}</div>
                 </div>
-                <div className="text-sky-300 text-sm mb-8">{t('pricingCancelAnytime')}</div>
                 <ul className="space-y-3 mb-10">
                   {PREMIUM_FEATURES.map(f => (
                     <li key={f} className="flex items-center gap-3 text-sm text-white">
