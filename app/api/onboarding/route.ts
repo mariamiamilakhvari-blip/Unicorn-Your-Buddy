@@ -3,8 +3,7 @@ import { auth } from '@/auth'
 import { connectDB } from '@/lib/db'
 import User from '@/lib/models/User'
 import Notification from '@/lib/models/Notification'
-import { suggestHobby } from '@/lib/plan'
-import { generateRitual, generateInvitation, generateHobbyPlan } from '@/lib/ai'
+import { generateRitual, generateInvitation } from '@/lib/ai'
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -13,17 +12,15 @@ export async function POST(req: Request) {
     const { profile, permissions, smartwatchProvider } = await req.json()
     await connectDB()
 
-    const hobby = suggestHobby(profile)
     const now = new Date()
 
-    // Generate AI-personalized content in parallel
-    const [firstRitual, firstInvitation, aiLearningMethod] = await Promise.all([
+    // Generate AI-personalized content in parallel. No hobby is assigned here:
+    // the user must choose their own hobby on the hobbies page, otherwise a
+    // badge would appear for a hobby they never picked.
+    const [firstRitual, firstInvitation] = await Promise.all([
       generateRitual(profile),
       generateInvitation(profile),
-      generateHobbyPlan(profile, hobby.name, hobby.duration),
     ])
-
-    const personalizedHobby = { ...hobby, learningMethod: aiLearningMethod, startedAt: now }
 
     await User.findByIdAndUpdate(session.user.id, {
       profile,
@@ -31,7 +28,6 @@ export async function POST(req: Request) {
       smartwatchProvider,
       onboardingCompleted: true,
       wellbeingPlan: {
-        hobby: personalizedHobby,
         ritualIndex: 0,
         lastRitualAt: now,
         lastReminderAt: now,
