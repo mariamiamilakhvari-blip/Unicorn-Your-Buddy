@@ -108,7 +108,7 @@ export const translations = {
     aboutCard2Title: 'Our mission',
     aboutCard2Body: 'Unicorn is your buddy who sits with you in the hard part and helps you find your way back to balance in your private life, without judgement, without rush, and without telling you who you should be.',
     aboutCard3Title: 'Our vision',
-    aboutCard3Body: 'We believe that when your most important relationships are healthy, everything else, your confidence, your focus, your sense of self, rises with it. Unicorn exists for the moments when you are going through a hard time in relationships. Unicorn is the place where people feel emotionally present, genuinely connected, and capable of finding a joy.',
+    aboutCard3Body: 'Unicorn helps people navigate relationship challenges, rebuild emotional strength, and get back confidence, connection, and joy.',
 
     // CTA
     ctaLabel: '007/ Start',
