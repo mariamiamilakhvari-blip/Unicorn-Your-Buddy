@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     const reply = stripHobbyTag(rawReply)
 
     const hasActiveHobby = currentHobby?.name && currentHobby.status === 'active'
-    const setOps: Record<string, unknown> = { chatHistory: null, lastActive: new Date() }
+    const setOps: Record<string, unknown> = { lastActive: new Date() }
     if (hobbyTag && !hasActiveHobby) {
       setOps['wellbeingPlan.hobby'] = {
         name: hobbyTag.name,
@@ -54,9 +54,17 @@ export async function POST(req: Request) {
       }
     }
 
-    // Persist the full conversation so it loads across devices/sessions
-    const fullHistory = [...history, { role: 'assistant', content: reply, at: new Date().toISOString() }]
-    setOps.chatHistory = fullHistory
+    // Append to the DB history (the source of truth) instead of overwriting it
+    // with the client's array. A client that sends only a partial history (a
+    // stale tab, a test, a race) must never be able to wipe stored messages.
+    const dbHistory = Array.isArray(user.chatHistory) ? user.chatHistory : []
+    const lastUserMsg = history[history.length - 1]
+    const appended = [...dbHistory]
+    if (lastUserMsg && lastUserMsg.role === 'user') {
+      appended.push({ role: 'user', content: lastUserMsg.content, at: (lastUserMsg as { at?: string }).at ?? new Date().toISOString() })
+    }
+    appended.push({ role: 'assistant', content: reply, at: new Date().toISOString() })
+    setOps.chatHistory = appended
     await User.findByIdAndUpdate(user._id, {
       $inc: { chatMessageCount: 1 },
       $set: setOps,
