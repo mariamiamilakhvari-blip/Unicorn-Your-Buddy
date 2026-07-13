@@ -1,7 +1,7 @@
 'use client'
 import { useState, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 
 function ResetForm() {
   const router = useRouter()
+  const token = useSearchParams().get('token') ?? ''
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [showPw, setShowPw] = useState(false)
@@ -17,17 +18,31 @@ function ResetForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+    if (!token) { setError('This reset link is invalid or has expired.'); return }
     if (password !== confirm) { setError('Passwords do not match.'); return }
     if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.error ?? 'Could not reset password. Try requesting a new link.')
+        setLoading(false)
+        return
+      }
       setSuccess(true)
       setTimeout(() => router.push('/login'), 2000)
-    }, 800)
+    } catch {
+      setError('Something went wrong. Please try again.')
+      setLoading(false)
+    }
   }
 
   if (success) {
